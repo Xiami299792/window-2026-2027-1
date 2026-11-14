@@ -1,0 +1,179 @@
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 96px 26px 120px;
+  color: #211d18;
+  font: 18px/1.95 "Songti SC", "Source Han Serif SC", "Noto Serif SC", SimSun, serif;
+  transition: opacity 1.6s ease, filter 1.6s ease;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(30px, 5vw, 46px);
+  line-height: 1.26;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.epigraph {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 24px 0 0;
+  padding: 14px 0 14px 16px;
+  border-left: 2px solid #a8342a;
+  font-size: 15px;
+  line-height: 1.9;
+  letter-spacing: 0.05em;
+  color: #6b6255;
+}
+
+.body {
+  margin-top: 52px;
+}
+
+.p {
+  margin: 0 0 1.15em;
+  text-align: justify;
+}
+
+.sec {
+  position: relative;
+  margin: 62px 0 0;
+  padding-top: 26px;
+  border-top: 1px solid #e2dbc9;
+}
+
+.h2 {
+  margin: 0 0 22px;
+  font-size: 22px;
+  line-height: 1.62;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.pre {
+  margin: 1.5rem 0 1.8rem;
+  padding: 16px 18px;
+  border: 1px solid #e2dbc9;
+  border-left: 3px solid #a8342a;
+  background: #f4efe2;
+  overflow-x: auto;
+}
+
+.pre code {
+  font: 13.5px/1.75 Consolas, "Cascadia Mono", monospace;
+  color: #3a332a;
+  white-space: pre;
+}
+
+.fig {
+  margin: 1.8rem 0 2rem;
+}
+
+.fig svg {
+  display: block;
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  margin: 0 auto;
+  color: #7b7364;
+}
+
+.fig svg .fig-accent {
+  color: #a8342a;
+}
+
+.fig figcaption {
+  margin-top: 0.7rem;
+  font: 12px/1.7 Consolas, monospace;
+  text-align: center;
+  color: #6b6255;
+}
+
+/* —— 那个小惊喜用到的样式 —— */
+
+.gone {
+  opacity: 0;
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+.melting {
+  animation: melt 0.9s ease-in-out infinite;
+}
+
+@keyframes melt {
+  0%, 100% { transform: translateX(0); }
+  35% { transform: translateX(-0.6px); }
+  70% { transform: translateX(0.5px); }
+}
+
+.txt em {
+  font-style: italic;
+  color: #b3200f;
+}
+
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  overflow: hidden;
+  background: #000;
+}
+
+.eye {
+  position: absolute;
+  margin: 0;
+  white-space: pre;
+  color: #9a9384;
+  font-family: Consolas, "Cascadia Mono", monospace;
+  letter-spacing: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 1.1s ease;
+  opacity: 0.42;
+}
+
+.eyeOn {
+  opacity: 1;
+}
+
+.eye i {
+  color: #b4402c;
+  font-style: normal;
+}
+
+.eye b {
+  color: #160705;
+  font-weight: 400;
+}
+
+.eye u {
+  color: #f4ece0;
+  text-decoration: none;
+}
+
+.eye span {
+  color: #7a1208;
+}
+
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 61;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.veilOn {
+  opacity: 0.42;
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 64px 20px 90px;
+  }
+}
