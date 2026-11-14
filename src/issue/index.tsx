@@ -261,6 +261,8 @@ print(response.json())`}</code></pre>
         </section>
         </div>
       </article>
+      {/* 黑幕必须和 article 同级：article 变成 .gone 时带 filter，
+          filter 会给 fixed 子元素生成包含块，塞进去就会缩进正文宽度里 */}
       <div className={styles.layer} ref={layerRef} aria-hidden="true" />
     </>
   );

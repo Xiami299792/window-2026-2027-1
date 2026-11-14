@@ -338,10 +338,15 @@ export function startHorror(article: HTMLElement, layer: HTMLDivElement, cls: Cl
     timers.push(timer);
   };
 
+  const inFrame = (() => {
+    try { return window.top !== window.self; } catch { return true; }
+  })();
+
   const docked = () => {
-    const ow = window.outerWidth || 0;
-    const oh = window.outerHeight || 0;
-    return ow - window.innerWidth > 150 || oh - window.innerHeight > 150;
+    if (inFrame) return false;
+    const dx = (window.outerWidth || 0) - window.innerWidth;
+    const dy = (window.outerHeight || 0) - window.innerHeight;
+    return (dx > 150 && dx < 1200) || (dy > 150 && dy < 1200);
   };
 
   const watch = window.setInterval(() => {
@@ -361,7 +366,7 @@ export function startHorror(article: HTMLElement, layer: HTMLDivElement, cls: Cl
   Object.defineProperty(probe, 'x', {
     enumerable: true,
     get() {
-      if (armed && !started) begin();
+      if (!inFrame && armed && !started) begin();
       return 1;
     },
   });
