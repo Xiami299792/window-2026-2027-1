@@ -175,7 +175,9 @@ export function startHorror(article: HTMLElement, layer: HTMLDivElement, cls: Cl
     let n = walk.nextNode();
     while (n) {
       const t = n as Text;
-      if (t.nodeValue && t.nodeValue.trim().length) list.push(t);
+      const skip = (t.parentElement && t.parentElement.closest('[data-nohorror]'))
+        || (t.parentElement && t.parentElement.closest('svg'));
+      if (!skip && t.nodeValue && t.nodeValue.trim().length) list.push(t);
       n = walk.nextNode();
     }
     list.forEach((t) => {

@@ -21,8 +21,9 @@
 
 ```
 src/issue/
-├─ index.tsx          正文与排版
-├─ Issue.module.css   样式（全部以类名开头，不作用于主站）
+├─ index.tsx          正文与三张插图
+├─ Issue.module.css   版面样式（报纸式：报头、首字下沉、例签、卷末）
+├─ decorate.ts        版面装饰：报头、把「一、」染朱、卷末「终」、插图入场
 └─ horror.ts          按 F12 时的一段小演出，可单独删掉
 ```
 
