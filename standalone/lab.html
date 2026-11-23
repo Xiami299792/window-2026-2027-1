@@ -1,0 +1,1640 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>F12 实训解密 · 十六关</title>
+<style>
+  /* ============ 基础重置与动效系统 ============ */
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+    line-height:1.65;
+    transition:background .35s ease,color .35s ease;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  button,input{font:inherit}
+  button{cursor:pointer}
+  code,kbd,.mono{font-family:"Cascadia Mono","JetBrains Mono","Fira Code",Consolas,"SFMono-Regular",monospace}
+
+  @keyframes fadeUp{
+    from{opacity:0;transform:translateY(10px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+  @keyframes blink{
+    0%,49%{opacity:1}
+    50%,100%{opacity:0}
+  }
+  @keyframes pulseLed{
+    0%,100%{box-shadow:0 0 0 0 rgba(255,122,47,.65)}
+    60%{box-shadow:0 0 0 7px rgba(255,122,47,0)}
+  }
+
+  #app{max-width:1060px;margin:0 auto;padding:34px 24px 104px;animation:fadeUp .3s ease both}
+
+  .mobile-note{
+    display:none;margin-bottom:20px;padding:11px 16px;font-size:13px;border-radius:8px;
+    border:1px solid rgba(148,163,184,.28);background:rgba(30,41,59,.55);color:#cbd5e1;
+    backdrop-filter:blur(8px);
+  }
+  @media (max-width:767px){
+    .mobile-note{display:block}
+    #app{padding:22px 16px 84px}
+  }
+
+  /* 自定义滚动条 */
+  ::-webkit-scrollbar{width:7px;height:7px}
+  ::-webkit-scrollbar-track{background:rgba(0,0,0,.2)}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:4px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.32)}
+
+  /* ============ 首页：策展级实训大厅 ============ */
+  body[data-major="home"]{
+    background-color:#0b0e14;color:#edf0f5;
+    background-image:
+      radial-gradient(ellipse 60% 45% at 14% 8%,rgba(37,99,235,.15),transparent 65%),
+      radial-gradient(ellipse 55% 40% at 88% 85%,rgba(255,122,47,.10),transparent 65%),
+      radial-gradient(rgba(255,255,255,.065) 1px,transparent 1px);
+    background-size:100% 100%,100% 100%,24px 24px;
+    background-attachment:fixed;
+  }
+
+  .home-hero{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;
+    padding-bottom:24px;border-bottom:1px solid rgba(255,255,255,.09);
+  }
+  .home-eyebrow{
+    display:inline-flex;align-items:center;gap:8px;margin-bottom:12px;
+    padding:4px 11px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);
+    font:11px/1.2 "Cascadia Mono",Consolas,monospace;letter-spacing:.14em;color:#94a3b8;
+  }
+  .home-eyebrow i{width:6px;height:6px;border-radius:50%;background:#38f294;box-shadow:0 0 8px #38f294}
+  .home-hero h1{
+    margin:0;font-size:34px;font-weight:750;letter-spacing:-.01em;line-height:1.18;
+    background:linear-gradient(135deg,#ffffff 0%,#cbd5e1 100%);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .home-lead{margin:14px 0 0;max-width:620px;font-size:15px;color:#9ca6b8;line-height:1.8}
+
+  .home-meter{
+    display:flex;align-items:center;gap:16px;padding:12px 16px;border-radius:12px;
+    border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .meter-ring{position:relative;width:46px;height:46px;flex-shrink:0}
+  .meter-ring svg{width:46px;height:46px;transform:rotate(-90deg)}
+  .meter-ring .track{fill:none;stroke:rgba(255,255,255,.1);stroke-width:3.5}
+  .meter-ring .fill{fill:none;stroke:#38f294;stroke-width:3.5;stroke-linecap:round;transition:stroke-dashoffset .4s ease}
+  .meter-ring span{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font:11px/1 "Cascadia Mono",Consolas,monospace;color:#e2e8f0;
+  }
+  .meter-info{display:flex;flex-direction:column;gap:4px}
+  .meter-info strong{font:13.5px/1.2 "Cascadia Mono",Consolas,monospace;color:#f1f5f9}
+  .meter-info span{font-size:12px;color:#7f8a9c}
+
+  .reset-bar{
+    display:none;margin-top:16px;padding:12px 16px;border-radius:10px;
+    border:1px solid rgba(239,68,68,.38);background:rgba(127,29,29,.22);
+    color:#fecaca;font-size:13px;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .reset-bar.show{display:flex;animation:fadeUp .2s ease}
+  .reset-bar button{padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.2);background:transparent;color:inherit;font-size:12px}
+  .reset-bar .danger{background:#dc2626;border-color:#dc2626;color:#fff;font-weight:600}
+
+  .portal-grid{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:28px;
+  }
+  @media (max-width:740px){.portal-grid{grid-template-columns:1fr}}
+
+  .portal{
+    position:relative;display:flex;flex-direction:column;justify-content:space-between;
+    min-height:232px;padding:26px 24px 22px;border-radius:14px;border:1px solid;
+    text-align:left;overflow:hidden;
+    transition:transform .24s cubic-bezier(.2,.8,.2,1),box-shadow .24s ease,border-color .24s ease;
+  }
+  .portal:hover{transform:translateY(-4px)}
+  .portal:active{transform:translateY(-1px)}
+  .portal-art{
+    position:absolute;right:-8px;bottom:-10px;width:154px;height:154px;
+    pointer-events:none;opacity:.16;transition:transform .35s ease,opacity .25s ease;
+  }
+  .portal:hover .portal-art{transform:scale(1.06) rotate(-2deg);opacity:.26}
+
+  .portal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;position:relative;z-index:1}
+  .portal .tag{
+    font:11px/1 "Cascadia Mono",Consolas,monospace;letter-spacing:.16em;text-transform:uppercase;
+    padding:4px 8px;border-radius:4px;
+  }
+  .portal .enter-hint{
+    font:11.5px/1 "Cascadia Mono",Consolas,monospace;opacity:.55;
+    transition:transform .2s ease,opacity .2s ease;
+  }
+  .portal:hover .enter-hint{opacity:1;transform:translateX(3px)}
+
+  .portal-body{position:relative;z-index:1;margin:16px 0 22px}
+  .portal h2{margin:0 0 6px;font-size:23px;font-weight:750;letter-spacing:.01em;display:flex;align-items:center;gap:8px}
+  .portal .panel-name{font:12px/1.4 "Cascadia Mono",Consolas,monospace;opacity:.75}
+  .portal .desc{margin:12px 0 0;font-size:13.8px;line-height:1.7;max-width:88%;opacity:.88}
+
+  .portal .foot{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:14px;border-top:1px solid rgba(255,255,255,.09)}
+  .pips{display:flex;gap:6px}
+  .pips i{display:block;width:28px;height:5px;border-radius:99px;background:currentColor;opacity:.18;transition:opacity .2s}
+  .pips i.done{opacity:1}
+  .portal .stat{font:12px/1 "Cascadia Mono",Consolas,monospace;font-weight:600}
+
+  /* 首页四张高质感入口卡 */
+  .portal[data-th="el"]{
+    background:
+      linear-gradient(155deg,rgba(19,59,107,.96) 0%,rgba(8,25,48,.98) 100%);
+    color:#eef6ff;border-color:rgba(96,165,250,.38);
+    box-shadow:0 12px 32px rgba(4,16,34,.45),inset 0 1px 0 rgba(255,255,255,.12);
+  }
+  .portal[data-th="el"]::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:
+      linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);
+    background-size:22px 22px;
+  }
+  .portal[data-th="el"] .tag{background:rgba(244,201,93,.15);color:#f4c95d;border:1px solid rgba(244,201,93,.35)}
+  .portal[data-th="el"]:hover{border-color:#f4c95d;box-shadow:0 18px 40px rgba(8,32,68,.65),0 0 0 1px rgba(244,201,93,.55)}
+  .portal[data-th="el"] .stat{color:#f4c95d}
+  .portal[data-th="el"] .pips i.done{background:#f4c95d;box-shadow:0 0 8px rgba(244,201,93,.5)}
+
+  .portal[data-th="cn"]{
+    background:
+      radial-gradient(circle at 80% 15%,rgba(56,242,148,.12),transparent 55%),
+      linear-gradient(160deg,#08110c 0%,#040806 100%);
+    color:#4df5a2;border-color:rgba(45,160,102,.42);
+    font-family:"Cascadia Mono",Consolas,monospace;
+    box-shadow:0 12px 32px rgba(0,0,0,.55),inset 0 1px 0 rgba(77,245,162,.12);
+  }
+  .portal[data-th="cn"] .tag{background:rgba(56,242,148,.12);color:#5cf8ab;border:1px solid rgba(56,242,148,.3)}
+  .portal[data-th="cn"]:hover{border-color:#38f294;box-shadow:0 18px 40px rgba(0,0,0,.65),0 0 28px rgba(56,242,148,.18)}
+  .portal[data-th="cn"] .cursor{display:inline-block;width:10px;height:20px;background:#38f294;animation:blink 1.1s steps(1) infinite}
+  .portal[data-th="cn"] .pips i.done{background:#38f294;box-shadow:0 0 8px rgba(56,242,148,.6)}
+
+  .portal[data-th="so"]{
+    background:
+      radial-gradient(circle at 15% 15%,rgba(157,140,255,.14),transparent 55%),
+      linear-gradient(160deg,#191c2b 0%,#121420 100%);
+    color:#e9ecfa;border-color:rgba(139,124,246,.32);
+    box-shadow:0 12px 32px rgba(7,8,18,.5),inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  .portal[data-th="so"] .tag{background:rgba(167,139,250,.15);color:#c4b5fd;border:1px solid rgba(167,139,250,.32)}
+  .portal[data-th="so"]:hover{border-color:#a78bfa;box-shadow:0 18px 42px rgba(10,10,24,.7),0 0 28px rgba(167,139,250,.18)}
+  .portal[data-th="so"] .stat{color:#c4b5fd}
+  .portal[data-th="so"] .pips i.done{background:#a78bfa;box-shadow:0 0 8px rgba(167,139,250,.55)}
+
+  .portal[data-th="ne"]{
+    background:
+      radial-gradient(circle at 85% 20%,rgba(255,122,47,.12),transparent 55%),
+      linear-gradient(160deg,#191d22 0%,#111418 100%);
+    color:#f0ede7;border-color:rgba(255,122,47,.28);
+    box-shadow:0 12px 32px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .portal[data-th="ne"] .tag{background:rgba(255,122,47,.14);color:#ff944d;border:1px solid rgba(255,122,47,.32)}
+  .portal[data-th="ne"]:hover{border-color:#ff7a2f;box-shadow:0 18px 40px rgba(0,0,0,.68),0 0 26px rgba(255,122,47,.16)}
+  .portal[data-th="ne"] .stat{color:#ff944d}
+  .portal[data-th="ne"] .pips i.done{background:#ff7a2f;box-shadow:0 0 8px rgba(255,122,47,.55)}
+
+  .home-foot{
+    margin-top:26px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07);
+    font-size:12.5px;color:#737e91;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  }
+
+  /* ============ 通用按钮与交互部件 ============ */
+  .ghost-btn{
+    background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.22);color:inherit;
+    padding:7px 14px;border-radius:7px;font-size:12.5px;opacity:.88;
+    transition:all .16s ease;
+  }
+  .ghost-btn:hover{opacity:1;background:rgba(255,255,255,.09);border-color:currentColor}
+  .ghost-btn:disabled{opacity:.35;cursor:not-allowed}
+
+  .submit-row{display:flex;gap:10px;align-items:stretch;margin-top:18px;flex-wrap:wrap}
+  .ans-input{
+    flex:1;min-width:220px;padding:12px 14px;border:1px solid;border-radius:8px;
+    background:rgba(0,0,0,.22);color:inherit;
+    font:14px/1.2 "Cascadia Mono",Consolas,monospace;letter-spacing:.04em;
+    transition:border-color .16s,box-shadow .16s;
+  }
+  .ans-input:focus{outline:none;box-shadow:0 0 0 3px rgba(255,255,255,.14)}
+  .primary-btn{
+    padding:12px 22px;border:1px solid;border-radius:8px;font-size:13.5px;font-weight:700;
+    letter-spacing:.04em;transition:transform .14s ease,filter .14s ease,box-shadow .16s ease;
+  }
+  .primary-btn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.06)}
+  .primary-btn:active:not(:disabled){transform:translateY(0)}
+  .primary-btn:disabled{opacity:.38;cursor:not-allowed}
+
+  .hint-list{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+  .hint-item{
+    padding:11px 14px;border:1px solid;border-radius:8px;font-size:13.5px;line-height:1.72;
+    animation:fadeUp .2s ease;
+  }
+  .feedback{margin-top:12px;min-height:22px;font:13px/1.65 "Cascadia Mono",Consolas,monospace}
+  .feedback.ok{color:#34d399}
+  .feedback.err{color:#f87171}
+
+  .debrief{
+    display:none;margin-top:20px;padding:18px 20px;border:1px solid;border-left-width:4px;border-radius:10px;
+  }
+  .debrief.show{display:block;animation:fadeUp .25s ease}
+  .debrief-title{
+    display:flex;align-items:center;gap:8px;font:12px/1 "Cascadia Mono",Consolas,monospace;
+    letter-spacing:.12em;text-transform:uppercase;opacity:.85;margin-bottom:8px;font-weight:700;
+  }
+  .debrief p{margin:0 0 16px;font-size:14.2px;line-height:1.78}
+
+  .step-nav{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+  .step-pill{
+    padding:6px 13px;border:1px solid;border-radius:6px;background:transparent;color:inherit;
+    font:12px/1.2 "Cascadia Mono",Consolas,monospace;opacity:.72;transition:all .16s ease;
+  }
+  .step-pill:hover:not(:disabled){opacity:1}
+  .step-pill.active{opacity:1;font-weight:700}
+  .step-pill.locked{opacity:.3;cursor:not-allowed}
+
+  .ltitle{margin:8px 0 4px;font-size:24px;font-weight:750;letter-spacing:.01em}
+  .lsub{font:12px/1.4 "Cascadia Mono",Consolas,monospace;opacity:.7;letter-spacing:.06em}
+  .stage-btn{
+    padding:9px 16px;border-radius:7px;border:1px solid currentColor;background:rgba(255,255,255,.04);color:inherit;
+    font:13px/1.2 "Cascadia Mono",Consolas,monospace;transition:all .16s ease;
+  }
+  .stage-btn:hover:not(:disabled){background:rgba(255,255,255,.12);transform:translateY(-1px)}
+  .stage-btn:disabled{opacity:.4;cursor:not-allowed}
+  .stage-out{margin-top:12px;font:13px/1.65 "Cascadia Mono",Consolas,monospace;opacity:.92}
+
+  /* =====================================================================
+     大关一：Elements（建筑工程蓝图美学）
+     ===================================================================== */
+  body[data-major="el"]{
+    background-color:#081c34;color:#eef6ff;
+    background-image:
+      radial-gradient(ellipse 70% 50% at 20% 0%,rgba(56,139,253,.18),transparent 65%),
+      linear-gradient(rgba(147,197,253,.11) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(147,197,253,.11) 1px,transparent 1px),
+      linear-gradient(rgba(147,197,253,.045) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(147,197,253,.045) 1px,transparent 1px);
+    background-size:100% 100%,100px 100px,100px 100px,20px 20px,20px 20px;
+    background-attachment:fixed;
+  }
+  .bp-ruler{
+    display:flex;justify-content:space-between;align-items:center;padding:6px 12px;margin-bottom:14px;
+    border:1px solid rgba(147,197,253,.32);border-radius:6px;
+    background:rgba(6,20,38,.82);
+    font:10.5px/1 "Cascadia Mono",Consolas,monospace;color:#8bb9ef;letter-spacing:.1em;
+  }
+  .bp-sheet{
+    position:relative;border:1.5px solid rgba(191,219,254,.55);border-radius:10px;
+    background:rgba(9,28,52,.88);padding:26px 28px 30px;
+    box-shadow:0 24px 60px rgba(2,10,24,.55),inset 0 0 0 5px rgba(8,28,52,.85),inset 0 0 0 6px rgba(147,197,253,.18);
+    backdrop-filter:blur(6px);
+  }
+  .bp-corner{position:absolute;width:14px;height:14px;border-color:#f4c95d;pointer-events:none}
+  .bp-corner.tl{top:-2px;left:-2px;border-top:2px solid;border-left:2px solid}
+  .bp-corner.tr{top:-2px;right:-2px;border-top:2px solid;border-right:2px solid}
+  .bp-corner.bl{bottom:-2px;left:-2px;border-bottom:2px solid;border-left:2px solid}
+  .bp-corner.br{bottom:-2px;right:-2px;border-bottom:2px solid;border-right:2px solid}
+
+  .bp-header{
+    display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+    padding-bottom:16px;border-bottom:1px dashed rgba(147,197,253,.35);
+  }
+  .bp-header h1{margin:4px 0 0;font-size:20px;font-family:"Cascadia Mono",Consolas,monospace}
+  .bp-fig{font:11.5px/1 "Cascadia Mono",Consolas,monospace;color:#f4c95d;letter-spacing:.14em}
+  .bp-stamp{
+    display:flex;align-items:center;gap:12px;
+  }
+  .bp-scale{
+    padding:4px 9px;border:1px solid rgba(244,201,93,.4);border-radius:4px;
+    font:10.5px/1 "Cascadia Mono",Consolas,monospace;color:#f4c95d;background:rgba(244,201,93,.08);
+  }
+  body[data-major="el"] .step-pill{border-color:rgba(147,197,253,.38)}
+  body[data-major="el"] .step-pill.active{background:#f4c95d;border-color:#f4c95d;color:#081c34;box-shadow:0 0 14px rgba(244,201,93,.35)}
+  .bp-task{
+    margin:16px 0;padding:15px 18px;border-left:3px solid #f4c95d;border-radius:0 8px 8px 0;
+    background:rgba(147,197,253,.08);font-size:15px;line-height:1.82;
+  }
+  .bp-stage{
+    margin:20px 0;padding:24px;border:1px solid rgba(147,197,253,.35);border-radius:10px;
+    background:rgba(5,16,32,.78);position:relative;
+  }
+  body[data-major="el"] .ans-input{border-color:rgba(147,197,253,.48);background:rgba(5,16,32,.75)}
+  body[data-major="el"] .ans-input:focus{border-color:#f4c95d;box-shadow:0 0 0 3px rgba(244,201,93,.22)}
+  body[data-major="el"] .primary-btn{background:#f4c95d;border-color:#f4c95d;color:#081c34;box-shadow:0 6px 18px rgba(244,201,93,.22)}
+  body[data-major="el"] .hint-item{border-color:rgba(244,201,93,.38);background:rgba(244,201,93,.08)}
+  body[data-major="el"] .debrief{border-color:rgba(244,201,93,.55);background:rgba(244,201,93,.09)}
+
+  /* Elements 拟真微场景卡片 */
+  .paper-box{
+    position:relative;max-width:460px;padding:22px;border-radius:10px;
+    background:#f8fafc;color:#1e293b;border:1px solid #cbd5e1;
+    box-shadow:0 12px 28px rgba(0,0,0,.3);overflow:hidden;
+  }
+  .paper-box h3{margin:0 0 10px;font-size:16.5px;color:#0f172a}
+  .paper-box p{margin:7px 0;font-size:13.8px;line-height:1.72;color:#334155}
+  .vip-mask{
+    position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:9px;padding:18px;text-align:center;
+    background:rgba(15,23,42,.92);backdrop-filter:blur(6px);color:#f8fafc;
+  }
+  .vip-mask .vip-badge{
+    padding:4px 11px;border-radius:999px;border:1px solid #f4c95d;color:#f4c95d;
+    font:11px/1 "Cascadia Mono",Consolas,monospace;letter-spacing:.12em;
+  }
+  .vip-toast{margin-top:12px;font:12.5px/1.5 "Cascadia Mono",Consolas,monospace;color:#f4c95d;min-height:19px}
+
+  .legacy-form{
+    max-width:400px;padding:20px;border-radius:10px;background:#f8fafc;color:#1e293b;
+    border:1px solid #cbd5e1;box-shadow:0 12px 28px rgba(0,0,0,.28);
+  }
+  .legacy-form label{display:block;font-size:12px;font-weight:600;color:#475569;margin:10px 0 5px}
+  .legacy-form input{width:100%;padding:9px 11px;border-radius:6px;border:1px solid #94a3b8;font-family:"Cascadia Mono",monospace;background:#fff}
+  .legacy-form button{margin-top:14px;padding:9px 16px;border-radius:6px;border:none;background:#0f294a;color:#fff;font-weight:600}
+  .legacy-form button:disabled{opacity:.42;cursor:not-allowed}
+
+  .swatch-card{
+    max-width:480px;padding:20px 22px;border-radius:10px;
+    background:linear-gradient(145deg,#0f172a,#1e293b);border:1px solid #334155;
+    box-shadow:0 12px 28px rgba(0,0,0,.32);
+  }
+  .price-card{
+    max-width:460px;padding:20px 22px;border-radius:10px;background:#f8fafc;color:#1e293b;
+    border:1px solid #cbd5e1;box-shadow:0 12px 28px rgba(0,0,0,.28);
+  }
+  .price-tag{font-size:24px;font-weight:800;color:#dc2626;margin:8px 0 4px}
+
+  /* =====================================================================
+     大关二：Console（高质感复古荧光终端）
+     ===================================================================== */
+  body[data-major="cn"]{
+    background-color:#040806;color:#52f2a0;
+    background-image:radial-gradient(ellipse 65% 45% at 50% 0%,rgba(42,209,129,.12),transparent 70%);
+    font-family:"Cascadia Mono",Consolas,monospace;
+    background-attachment:fixed;
+  }
+  body[data-major="cn"]::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+    background:repeating-linear-gradient(to bottom,transparent 0 2px,rgba(0,0,0,.18) 2px 3px);
+  }
+  .tty-win{
+    border:1px solid rgba(56,242,148,.34);border-radius:12px;background:#07110c;
+    box-shadow:0 24px 64px rgba(0,0,0,.72),0 0 42px rgba(35,209,139,.09),inset 0 1px 0 rgba(82,242,160,.16);
+    overflow:hidden;
+  }
+  .tty-bar{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:12px 18px;border-bottom:1px solid rgba(56,242,148,.24);background:#0a1911;font-size:12px;
+  }
+  .tty-dots{display:flex;align-items:center;gap:8px}
+  .tty-dots i{width:10px;height:10px;border-radius:50%;display:inline-block;border:1px solid rgba(82,242,160,.45)}
+  .tty-dots i.on{background:#38f294;box-shadow:0 0 8px #38f294;border-color:#38f294}
+  .tty-body{padding:24px 26px 30px}
+  body[data-major="cn"] .step-pill{border-color:rgba(56,242,148,.32);color:#52f2a0}
+  body[data-major="cn"] .step-pill.active{background:#38f294;border-color:#38f294;color:#04140b;box-shadow:0 0 16px rgba(56,242,148,.35)}
+  .tty-task{
+    margin:16px 0;padding:15px 18px;border:1px solid rgba(56,242,148,.24);border-radius:8px;
+    background:#040c08;font-size:14px;line-height:1.85;
+  }
+  .tty-task::before{content:"$ task --brief\A";white-space:pre;display:block;font-size:11.5px;color:#ffb347;margin-bottom:5px}
+  .tty-stage{
+    margin:18px 0;padding:18px 20px;border:1px dashed rgba(56,242,148,.36);border-radius:8px;
+    background:#030906;
+  }
+  body[data-major="cn"] .ans-input{border-color:rgba(56,242,148,.4);color:#7dfab0;background:#030806}
+  body[data-major="cn"] .ans-input:focus{border-color:#38f294;box-shadow:0 0 0 3px rgba(56,242,148,.2)}
+  body[data-major="cn"] .primary-btn{background:#38f294;border-color:#38f294;color:#04140b;box-shadow:0 0 18px rgba(56,242,148,.24)}
+  body[data-major="cn"] .hint-item{border-color:rgba(56,242,148,.32);background:#07170f;color:#9df7c6}
+  body[data-major="cn"] .debrief{border-color:#38f294;background:#081d12}
+  .tty-tip{margin-top:10px;font-size:12px;color:#7ec9a0;opacity:.85}
+
+  .notice-scroll{
+    max-height:210px;overflow:auto;border:1px solid rgba(56,242,148,.25);border-radius:6px;
+    background:#020705;padding:6px 12px;font-size:12.5px;
+  }
+  .notice-row{padding:6px 4px;border-bottom:1px solid rgba(56,242,148,.1);color:#7ec9a0}
+  .frame-wrap{border:1px solid rgba(56,242,148,.35);border-radius:8px;background:#020705;padding:10px}
+  .frame-wrap iframe{width:100%;height:132px;border:1px solid rgba(56,242,148,.22);border-radius:4px;background:#0a1710}
+
+  /* =====================================================================
+     大关三：Sources（现代精良 IDE 调试台）
+     ===================================================================== */
+  body[data-major="so"]{
+    background-color:#0f111a;color:#e6e9f6;
+    background-image:radial-gradient(ellipse 60% 45% at 85% 0%,rgba(139,124,246,.14),transparent 65%);
+    background-attachment:fixed;
+  }
+  .ide-shell{
+    border:1px solid rgba(139,124,246,.28);border-radius:12px;background:#161925;
+    box-shadow:0 26px 64px rgba(4,5,14,.65),inset 0 1px 0 rgba(255,255,255,.06);
+    overflow:hidden;
+  }
+  .ide-topbar{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:11px 18px;background:#11131d;border-bottom:1px solid #262a3d;
+  }
+  .ide-brand{display:flex;align-items:center;gap:12px}
+  .ide-lights{display:flex;gap:6px}
+  .ide-lights span{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .ide-lights span:nth-child(1){background:#ff5f56}
+  .ide-lights span:nth-child(2){background:#ffbd2e}
+  .ide-lights span:nth-child(3){background:#27c93f}
+  .ide-topbar h1{margin:0;font-size:13.5px;font-family:"Cascadia Mono",Consolas,monospace;color:#c4b5fd}
+  .ide-tabs{
+    display:flex;background:#131621;border-bottom:1px solid #262a3d;overflow-x:auto;
+  }
+  .ide-tab{
+    display:inline-flex;align-items:center;gap:7px;padding:10px 18px;
+    border:none;border-right:1px solid #262a3d;background:transparent;
+    color:#8e96b3;font:12.5px/1.2 "Cascadia Mono",Consolas,monospace;white-space:nowrap;
+    transition:background .15s,color .15s;
+  }
+  .ide-tab:hover:not(:disabled){background:#1a1e2e;color:#d6dcf2}
+  .ide-tab.active{background:#161925;color:#f1f5ff;box-shadow:inset 0 2px 0 #a78bfa}
+  .ide-tab.locked{opacity:.36;cursor:not-allowed}
+  .ide-tab .js-dot{width:7px;height:7px;border-radius:2px;background:#facc15;display:inline-block}
+  .ide-body{display:grid;grid-template-columns:228px minmax(0,1fr)}
+  @media (max-width:760px){.ide-body{grid-template-columns:1fr}}
+  .ide-side{
+    padding:18px 14px;border-right:1px solid #262a3d;background:#12151f;
+    font:12px/1.85 "Cascadia Mono",Consolas,monospace;color:#8e96b3;
+  }
+  @media (max-width:760px){.ide-side{border-right:none;border-bottom:1px solid #262a3d}}
+  .ide-side .sec-h{font-size:10.5px;letter-spacing:.14em;color:#666f8f;margin-bottom:8px;text-transform:uppercase}
+  .ide-folder{color:#cbd5e1;font-weight:600;margin-bottom:4px}
+  .ide-file{padding:5px 10px 5px 18px;border-radius:5px;color:#9aa3bf;margin:2px 0}
+  .ide-file.cur{background:rgba(167,139,250,.16);color:#5ce1e6;border-left:2px solid #5ce1e6}
+  .ide-main{padding:24px 26px 28px}
+  .ide-crumb{
+    display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;
+    font:11.5px/1 "Cascadia Mono",Consolas,monospace;color:#828ba8;
+  }
+  .ide-crumb strong{color:#5ce1e6;font-weight:600}
+  .ide-task{
+    margin:14px 0 18px;padding:15px 18px;border:1px solid #2d334c;border-left:3px solid #a78bfa;
+    border-radius:0 8px 8px 0;background:#11141e;font-size:14.5px;line-height:1.82;
+  }
+  .ide-stage{margin:18px 0;padding:20px;border:1px solid #2d334c;border-radius:8px;background:#0f121b}
+  .ide-status{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:7px 16px;background:#1d1a33;border-top:1px solid #2d324c;
+    font:11px/1.2 "Cascadia Mono",Consolas,monospace;color:#c4b5fd;
+  }
+  body[data-major="so"] .ans-input{border-color:#3a4160;background:#10121c;color:#e6e9f6}
+  body[data-major="so"] .ans-input:focus{border-color:#a78bfa;box-shadow:0 0 0 3px rgba(167,139,250,.22)}
+  body[data-major="so"] .primary-btn{background:#a78bfa;border-color:#a78bfa;color:#120f24;box-shadow:0 6px 18px rgba(167,139,250,.22)}
+  body[data-major="so"] .hint-item{border-color:#393f5d;background:#1c1f30;color:#d6dbf2}
+  body[data-major="so"] .debrief{border-color:#a78bfa;background:#1d1b33}
+
+  /* =====================================================================
+     大关四：Network（工业级信号抓包监测台）
+     ===================================================================== */
+  body[data-major="ne"]{
+    background-color:#0e1114;color:#f0ede7;
+    background-image:
+      radial-gradient(ellipse 65% 40% at 80% 0%,rgba(255,122,47,.12),transparent 65%),
+      repeating-linear-gradient(135deg,rgba(255,255,255,.014) 0 2px,transparent 2px 10px);
+    background-attachment:fixed;
+  }
+  .net-rack{
+    border:1px solid #2f363f;border-radius:12px;background:#15191e;
+    box-shadow:0 26px 64px rgba(0,0,0,.66),inset 0 1px 0 rgba(255,255,255,.06);
+    overflow:hidden;
+  }
+  .net-head{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:14px 20px;background:#1b2027;border-bottom:1px solid #2f363f;
+  }
+  .net-title-wrap{display:flex;align-items:center;gap:10px}
+  .net-led{
+    width:9px;height:9px;border-radius:50%;background:#ff7a2f;
+    animation:pulseLed 2s ease-out infinite;
+  }
+  .net-head h1{margin:0;font-size:16px;font-family:"Cascadia Mono",Consolas,monospace;color:#ffa05c}
+  .telemetry{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;
+    background:#2a3038;border-bottom:1px solid #2a3038;
+    font:12px/1.4 "Cascadia Mono",Consolas,monospace;
+  }
+  .telemetry > div{background:#111418;padding:11px 16px}
+  .telemetry span{display:block;font-size:10px;color:#788390;letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px}
+  .telemetry strong{color:#e6eaef;font-size:13px}
+  .telemetry strong.st-ok{color:#34d399}
+  .telemetry strong.st-err{color:#f87171}
+  .net-body{padding:24px 26px 30px}
+  body[data-major="ne"] .step-pill{border-color:#3a434e;color:#c9d0d8}
+  body[data-major="ne"] .step-pill.active{background:#ff7a2f;border-color:#ff7a2f;color:#1a1008;box-shadow:0 0 16px rgba(255,122,47,.32)}
+  .net-task{
+    margin:16px 0;padding:15px 18px;border-left:3px solid #ff7a2f;border-radius:0 8px 8px 0;
+    background:#101317;font-size:14.5px;line-height:1.82;
+  }
+  .net-stage{margin:18px 0;padding:20px;border:1px solid #2d343d;border-radius:8px;background:#0e1115}
+  .pkt-log{margin-top:14px;font:12px/1.65 "Cascadia Mono",Consolas,monospace;color:#9aa5b2}
+  .pkt-log div{padding:6px 0;border-bottom:1px solid #1f252c;display:flex;gap:8px;align-items:baseline}
+  .pkt-log .ts{color:#66707d;flex-shrink:0}
+  body[data-major="ne"] .ans-input{border-color:#424b57;background:#0e1115;color:#f0ede7}
+  body[data-major="ne"] .ans-input:focus{border-color:#ff7a2f;box-shadow:0 0 0 3px rgba(255,122,47,.22)}
+  body[data-major="ne"] .primary-btn{background:#ff7a2f;border-color:#ff7a2f;color:#1a1008;box-shadow:0 6px 18px rgba(255,122,47,.24)}
+  body[data-major="ne"] .hint-item{border-color:rgba(255,122,47,.35);background:#1f1914;color:#f2d8c5}
+  body[data-major="ne"] .debrief{border-color:#ff7a2f;background:#211812}
+</style>
+</head>
+<body data-major="home">
+<a href="./index.html" style="position:fixed;top:14px;right:16px;z-index:9999;
+   padding:8px 14px;border:1px solid #3a4048;background:rgba(11,13,16,.85);color:#cfc9bf;
+   text-decoration:none;font:12px/1.2 'Cascadia Mono',monospace;letter-spacing:.08em;
+   border-radius:6px">← 回到正文</a>
+
+<div id="app"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ==================== 工具函数：防剧透哈希与安全存储 ==================== */
+  const STORE_KEY = 'f12_lab_prog_v2';
+  const DEFAULT_PROG = { el: 0, cn: 0, so: 0, ne: 0 };
+
+  function norm(s) {
+    return String(s || '').trim().toLowerCase().replace(/\s+/g, '');
+  }
+
+  function digest(str) {
+    const s = 'f12lab::2026::' + norm(str);
+    let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (let i = 0; i < s.length; i++) {
+      const ch = s.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0');
+  }
+
+  function nowStamp() {
+    const d = new Date();
+    const p = (n) => String(n).padStart(2, '0');
+    return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  }
+
+  let prog = Object.assign({}, DEFAULT_PROG);
+  function loadProg() {
+    try {
+      const raw = window.localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      ['el', 'cn', 'so', 'ne'].forEach((k) => {
+        if (typeof parsed[k] === 'number' && parsed[k] >= 0 && parsed[k] <= 4) {
+          prog[k] = parsed[k];
+        }
+      });
+    } catch (_) {}
+  }
+  function saveProg() {
+    try {
+      window.localStorage.setItem(STORE_KEY, JSON.stringify(prog));
+    } catch (_) {}
+  }
+
+  /* ==================== 入口卡内联矢量装饰图 ==================== */
+  const PORTAL_ART = {
+    el: `<svg class="portal-art" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="14" y="14" width="92" height="92" stroke-dasharray="4 3"/>
+      <rect x="30" y="30" width="60" height="24"/>
+      <rect x="30" y="64" width="26" height="26"/>
+      <rect x="64" y="64" width="26" height="26"/>
+      <path d="M60 54v10M43 59h34M43 59v5M77 59v5"/>
+    </svg>`,
+    cn: `<svg class="portal-art" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="14" y="20" width="92" height="80" rx="6"/>
+      <path d="M14 36h92M32 54l16 12-16 12M56 78h28"/>
+    </svg>`,
+    so: `<svg class="portal-art" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.6">
+      <circle cx="30" cy="34" r="6" fill="currentColor"/>
+      <path d="M44 34h52M30 56h66M30 74h48M30 92h58"/>
+      <circle cx="30" cy="74" r="4"/>
+      <path d="M30 40v30" stroke-dasharray="3 3"/>
+    </svg>`,
+    ne: `<svg class="portal-art" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M10 74h22l10-34 14 52 12-30 10 12h32"/>
+      <circle cx="42" cy="40" r="3.5" fill="currentColor"/>
+      <circle cx="68" cy="62" r="3.5" fill="currentColor"/>
+      <line x1="10" y1="98" x2="110" y2="98" stroke-dasharray="4 4"/>
+    </svg>`
+  };
+
+  /* ==================== 生命周期清理池 ==================== */
+  let timers = [];
+  let blobUrls = [];
+  let injectedScripts = [];
+  let cleanups = [];
+  const origBtoa = window.btoa.bind(window);
+
+  function trackTimer(id) { timers.push(id); return id; }
+  function makeBlobUrl(content, mime) {
+    const u = URL.createObjectURL(new Blob([content], { type: mime }));
+    blobUrls.push(u);
+    return u;
+  }
+  function injectVirtualScript(code, virtualPath) {
+    const full = code + '\n//# sourceURL=' + virtualPath;
+    const url = makeBlobUrl(full, 'text/javascript');
+    const sc = document.createElement('script');
+    sc.src = url;
+    document.body.appendChild(sc);
+    injectedScripts.push(sc);
+    return sc;
+  }
+  function clearStageResources() {
+    timers.forEach((t) => clearTimeout(t));
+    timers = [];
+    cleanups.forEach((fn) => { try { fn(); } catch (_) {} });
+    cleanups = [];
+    injectedScripts.forEach((sc) => { if (sc.parentNode) sc.parentNode.removeChild(sc); });
+    injectedScripts = [];
+    blobUrls.forEach((u) => { try { URL.revokeObjectURL(u); } catch (_) {} });
+    blobUrls = [];
+    window.btoa = origBtoa;
+    delete window.__courseLab;
+    delete window.__so1Ready;
+    delete window.__so2Check;
+    delete window.__so3Trigger;
+    delete window.__so4Run;
+    delete window.requestVault;
+    delete window.submit;
+  }
+
+  /* ==================== 四大关 · 十六关配置 ==================== */
+  const MAJORS = [
+    {
+      id: 'el',
+      no: 'SECTION 01',
+      name: '骨架拆解',
+      panel: 'Elements · 元素面板',
+      blurb: '拆开网页的外壳，看清被藏起来的节点、被盖住的样式和动态长出来的 DOM。',
+      subs: [
+        {
+          id: 'el1',
+          code: 'FIG.01',
+          title: '会员弹窗挡住了答案',
+          task: '下面这份校园文档被登录遮罩盖住了，页面还拦截了右键菜单。打开 Elements 面板，把遮罩层挪开，读出底下的口令。',
+          placeholder: 'EL-MASK-...',
+          hashes: ['f030f87531fd2084'],
+          hints: [
+            '右键被拦住时，直接按 F12（或 Ctrl+Shift+I）打开开发者工具，再按 Ctrl+Shift+C 启用元素选择器。',
+            '把鼠标点在深色遮罩上，Elements 会定位到 id="el1-vip-mask" 的 div。',
+            '选中该节点按 Delete 键删除，或在右侧 Styles 里加上 display: none。'
+          ],
+          debrief: '删掉遮罩层只改动了你本地浏览器里的 DOM 树，刷新页面它就会恢复原样。纯前端弹窗遮罩拦不住开发者工具，真正受保护的内容必须由服务端鉴权后再下发。',
+          build(stage) {
+            stage.innerHTML = `
+              <div class="paper-box" id="el1-paper">
+                <h3>2026 秋季实训存档</h3>
+                <p>检索状态：正文已随页面下发至本地。</p>
+                <p>归档口令：<strong class="mono">EL-MASK-01</strong></p>
+                <div class="vip-mask" id="el1-vip-mask">
+                  <span class="vip-badge">VIP ONLY</span>
+                  <div style="font-weight:600">开通会员后查看全文</div>
+                  <div style="font-size:12px;opacity:.7">（此区域已禁用右键菜单）</div>
+                </div>
+              </div>
+              <div class="vip-toast" id="el1-toast"></div>
+            `;
+            const box = stage.querySelector('#el1-paper');
+            const toast = stage.querySelector('#el1-toast');
+            box.addEventListener('contextmenu', (e) => {
+              e.preventDefault();
+              toast.textContent = '右键菜单已被拦截。试试直接按 F12 或 Ctrl+Shift+C。';
+            });
+          }
+        },
+        {
+          id: 'el2',
+          code: 'FIG.02',
+          title: '星号后面的密码',
+          task: '旧版系统已经把口令填进了密码框，但它用星号遮住了内容，提交按钮也被置灰。在 Elements 里改写节点属性，读出里面的明文。',
+          placeholder: 'EL-PASS-...',
+          hashes: ['e34fd1a0b56d003e'],
+          hints: [
+            '用元素选择器选中带着星号的输入框，观察它的 HTML 标签属性。',
+            '输入框的 type="password" 决定了浏览器把它显示成圆点或星号。',
+            '双击 type="password"，把 password 改成 text 回车，明文就会直接显示出来。'
+          ],
+          debrief: 'password 只是浏览器渲染层的视觉遮挡，并不对输入框里的字符串加密。顺手删掉按钮上的 disabled 属性还能解除置灰状态，这就是客户端限制不能替代服务端校验的原因。',
+          build(stage) {
+            stage.innerHTML = `
+              <div class="legacy-form">
+                <label>归档账号</label>
+                <input type="text" value="ruixin_2026" readonly>
+                <label>预置口令</label>
+                <input id="el2-pwd" type="password" value="EL-PASS-4821" readonly>
+                <button type="button" id="el2-btn" disabled>读取校验</button>
+                <div id="el2-out" style="margin-top:10px;font-size:12.5px;color:#0f766e"></div>
+              </div>
+            `;
+            const btn = stage.querySelector('#el2-btn');
+            const out = stage.querySelector('#el2-out');
+            const pwd = stage.querySelector('#el2-pwd');
+            btn.addEventListener('click', () => {
+              out.textContent = '按钮已解锁，当前框内值：' + pwd.value;
+            });
+          }
+        },
+        {
+          id: 'el3',
+          code: 'FIG.03',
+          title: '层叠覆盖的真相',
+          task: '下面这段标本文字同时命中了三条 CSS 颜色规则。用 Elements 查出最终生效的颜色值（十六进制或 rgb 格式均可提交）。',
+          placeholder: '#xxxxxx 或 rgb(...)',
+          hashes: ['d6dd4d0a68862179', '35bfdcfbd1e586e1', '91bf55b94593d3a7'],
+          hints: [
+            '选中标本文字，看右侧 Styles 面板里被画上删除线的规则，那表示它们在优先级比拼中输掉了。',
+            '也可以直接切换到 Computed（已计算）面板，搜索 color 看浏览器最终采用的值。',
+            '带 !important 的规则压过了 ID 选择器，结果是 #22ff66（或 rgb(34, 255, 102)）。'
+          ],
+          debrief: 'Styles 面板按选择器权重从高到低排列，被划掉的规则没有生效；Computed 面板则直接给出浏览器渲染后的最终计算值，排查样式冲突时两者配合最省力。',
+          build(stage) {
+            stage.innerHTML = `
+              <style>
+                #el3-specimen { color: #3b82f6; }
+                .el3-rule { color: #22ff66 !important; }
+                p.el3-rule { color: #e11d48; }
+              </style>
+              <div class="swatch-card">
+                <p id="el3-specimen" class="el3-rule" style="margin:0;font-size:17px;font-weight:600">
+                  这一行标本文字最终生效的 color 是什么？
+                </p>
+              </div>
+            `;
+          }
+        },
+        {
+          id: 'el4',
+          code: 'FIG.04',
+          title: '源代码里找不到的标价',
+          task: '校园二手书架加载完成后，脚本会动态写入一条实时价签节点，内部折扣码藏在它的属性里。初始网页源代码（Ctrl+U）看不到它，用 Elements 找到它。',
+          placeholder: 'EL-DOM-...',
+          hashes: ['66298314305f8d9c'],
+          hints: [
+            'Ctrl+U 看到的是服务器最初发来的静态文本，而脚本运行后改动的节点只会出现在 Elements 面板的实时 DOM 树里。',
+            '等下方卡片变成“现价 ¥18.00”后，用 Ctrl+Shift+C 点击这行字。',
+            '观察该节点上的 data-coupon 属性，里面就是口令。'
+          ],
+          debrief: '网页源代码是静态起点，Elements 里看到的才是经过 JavaScript 动态修改后的实时 DOM。现代单页应用里，很多价格、列表和按钮都是在运行时才写进 DOM 的。',
+          build(stage) {
+            stage.innerHTML = `
+              <!-- 静态注释：真正折扣码由运行时脚本写入，不保存在初始源码里 -->
+              <div class="price-card" id="el4-card">
+                <div style="font-size:13px;color:#64748b">《计算机网络自顶向下方法》（二手）</div>
+                <div id="el4-slot" style="margin-top:8px;color:#475569">正在向本地 DOM 写入实时价签...</div>
+              </div>
+            `;
+            trackTimer(setTimeout(() => {
+              const slot = stage.querySelector('#el4-slot');
+              if (!slot) return;
+              const live = document.createElement('div');
+              live.className = 'price-tag';
+              live.setAttribute('data-coupon', 'EL-DOM-907');
+              live.textContent = '现价 ¥18.00';
+              const sub = document.createElement('div');
+              sub.style.cssText = 'font-size:12px;color:#475569;font-weight:400';
+              sub.textContent = '提示：折扣码已写入本节点属性。';
+              slot.textContent = '';
+              slot.appendChild(live);
+              slot.appendChild(sub);
+            }, 900));
+          }
+        }
+      ]
+    },
+    {
+      id: 'cn',
+      no: 'SECTION 02',
+      name: '现场对话',
+      panel: 'Console · 控制台',
+      blurb: '绕过灰掉的按钮，直接和页面里的脚本、变量与嵌套窗口对话。',
+      subs: [
+        {
+          id: 'cn1',
+          code: 'CMD.01',
+          title: '点不动的抢课按钮',
+          task: '通识课补选按钮被禁用了，剩余额度也变成了 0。但底层对象 __courseLab 还挂在 window 上。在 Console 里把额度改到至少 3，再调用它的 claim() 拿到口令。',
+          placeholder: 'CN-QUOTA-...',
+          hashes: ['b5cc3dcb5d63608a'],
+          hints: [
+            '打开 Console，直接输入 __courseLab 回车，查看它包含的属性和方法。',
+            '输入 __courseLab.quota = 5 回车，把额度改大。',
+            '接着输入 __courseLab.claim() 回车，返回值就是口令（也可以直接在这里执行 submit("口令") 交卷）。'
+          ],
+          debrief: 'Console 与当前页面共享同一个 JavaScript 运行环境。凡是挂在全局对象上的状态和函数，都可以被直接读写与调用。',
+          build(stage) {
+            const code = String.fromCharCode(67,78,45,81,85,79,84,65,45,51,48,53);
+            window.__courseLab = {
+              quota: 0,
+              note: 'quota 至少为 3 时，调用 claim() 可领取口令',
+              claim() {
+                if (Number(this.quota) >= 3) return code;
+                return '剩余额度不足（当前 ' + this.quota + '，至少需要 3）';
+              }
+            };
+            stage.innerHTML = `
+              <div>当前剩余补选额度：<strong id="cn1-q" style="color:#ffb347">0</strong></div>
+              <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+                <button class="stage-btn" id="cn1-btn" disabled>提交补选（已锁定）</button>
+                <button class="stage-btn" id="cn1-sync">刷新页面显示</button>
+              </div>
+              <div class="stage-out" id="cn1-out"></div>
+            `;
+            const qEl = stage.querySelector('#cn1-q');
+            const out = stage.querySelector('#cn1-out');
+            stage.querySelector('#cn1-sync').addEventListener('click', () => {
+              qEl.textContent = String(window.__courseLab.quota);
+              out.textContent = '当前 __courseLab.claim() -> ' + window.__courseLab.claim();
+            });
+          }
+        },
+        {
+          id: 'cn2',
+          code: 'CMD.02',
+          title: '六十条通知里的暗号',
+          task: '下面混排了 60 条校园通知，其中 5 条带着隐蔽标记 data-urgent="true"，它们各自的 data-frag 拼起来就是口令。别一条条肉眼翻，在 Console 用 querySelectorAll 一行提取。',
+          placeholder: 'CN-DOM-...',
+          hashes: ['8438a3d8ac5b7cd8'],
+          hints: [
+            '在 Console 里可以用 document.querySelectorAll() 按 CSS 选择器批量抓取节点。',
+            '试试 document.querySelectorAll("#cn2-list [data-urgent=\'true\']")，看看选出了哪 5 条。',
+            '用 [...document.querySelectorAll("#cn2-list [data-urgent=\'true\']")].map(el => el.dataset.frag).join("") 直接拼出结果。'
+          ],
+          debrief: '面对几十上百条重复结构的数据，Console 配合 querySelectorAll 和数组方法，两三行就能完成筛选与汇总，比手工复制准确得多。',
+          build(stage) {
+            const titles = [
+              '关于本周实验室安全巡检的通知', '图书馆自习室预约系统例行维护',
+              '秋季学期体育课体质测试时间安排', '校园网核心机房凌晨割接公告',
+              '创新创业项目结题材料提交说明', '教学楼多媒体设备报修流程更新'
+            ];
+            const picks = { 7: 'CN', 19: '-', 33: 'DOM', 46: '-', 58: '614' };
+            let rows = '';
+            for (let i = 1; i <= 60; i++) {
+              const t = titles[i % titles.length];
+              if (picks[i]) {
+                rows += `<div class="notice-row" data-urgent="true" data-frag="${picks[i]}">[#${String(i).padStart(2,'0')}] ${t}</div>`;
+              } else {
+                rows += `<div class="notice-row">[#${String(i).padStart(2,'0')}] ${t}</div>`;
+              }
+            }
+            stage.innerHTML = `<div class="notice-scroll" id="cn2-list">${rows}</div>`;
+          }
+        },
+        {
+          id: 'cn3',
+          code: 'CMD.03',
+          title: '套娃里的登录框',
+          task: '下方嵌了一个同源的统一身份认证子窗口（iframe），口令存在子窗口里的 window.__authVault.token 中。直接在默认环境里敲会报 undefined，切换执行上下文后再读。',
+          placeholder: 'CN-IFRAME-...',
+          hashes: ['c8db53dae541d5eb'],
+          hints: [
+            '每个 iframe 都有独立的 JavaScript 全局环境，主页面里的 window 读不到子窗口里的变量。',
+            '看 Console 面板左上角显示 "top" 的下拉菜单，点开它切换到 cn3-auth-frame（或 about:srcdoc）。',
+            '切换完成后，在 Console 输入 __authVault.token 回车即可。'
+          ],
+          debrief: '很多校园门户、支付框和第三方登录组件都嵌在 iframe 里。以后遇到“明明页面里有这个元素或变量，控制台却查不到”的情况，先检查左上角上下文是不是还停在 top。',
+          build(stage) {
+            const frameHtml = `<!doctype html><html><head><meta charset="utf-8"><style>
+              body{margin:0;padding:14px;background:#07140d;color:#6ef7b0;font:13px/1.65 Consolas,monospace}
+              .tag{font-size:11px;color:#ffb347;margin-bottom:4px}
+            </style></head><body>
+              <div class="tag">IFRAME :: cn3-auth-frame</div>
+              <div>统一身份认证子窗口已就绪。</div>
+              <div style="opacity:.75;font-size:12px">变量 __authVault 已挂载在当前子窗口。</div>
+              <script>
+                window.__authVault = {
+                  status: 'ready',
+                  token: ['CN','IFRAME','729'].join('-')
+                };
+              <\/script>
+            </body></html>`;
+            stage.innerHTML = `
+              <div class="frame-wrap">
+                <iframe id="cn3-auth-frame" name="cn3-auth-frame" title="统一身份认证子窗口"></iframe>
+              </div>
+              <div style="margin-top:10px;font-size:12px;opacity:.8">
+                主页面当前 typeof window.__authVault === "undefined"
+              </div>
+            `;
+            stage.querySelector('#cn3-auth-frame').srcdoc = frameHtml;
+          }
+        },
+        {
+          id: 'cn4',
+          code: 'CMD.04',
+          title: '半路截胡',
+          task: '点击“签发一次性凭证”后，脚本会在内部调用 window.btoa() 对明文口令编码，随后立刻销毁结果。在 Console 里劫持（Hook）window.btoa，把传进去的明文拦下来。',
+          placeholder: 'CN-HOOK-...',
+          hashes: ['e8f4e2511854c5c3'],
+          hints: [
+            'JavaScript 允许在运行时重写全局函数。先保存原函数，再给 window.btoa 赋一个带日志的新函数。',
+            '在 Console 执行：const _b = btoa; window.btoa = s => { console.log("抓到明文:", s); return _b(s); };',
+            '挂好钩子后，再点击下方的“签发一次性凭证”按钮，明文就会印在 Console 里。'
+          ],
+          debrief: '在控制台重写原生方法或业务函数（Hook），可以在不改动服务端代码的前提下，直接窥见加密前或发包前的原始入参，是分析前端逻辑的高频技巧。',
+          build(stage) {
+            const secret = String.fromCharCode(67,78,45,72,79,79,75,45,56,52,50);
+            stage.innerHTML = `
+              <button class="stage-btn" id="cn4-fire">签发一次性凭证</button>
+              <div class="stage-out" id="cn4-out">等待签发...</div>
+            `;
+            const out = stage.querySelector('#cn4-out');
+            stage.querySelector('#cn4-fire').addEventListener('click', () => {
+              let encoded = '';
+              try { encoded = window.btoa(secret); } catch (_) {}
+              out.textContent = '凭证已调用 btoa() 完成编码（长度 ' + encoded.length + '），明文未保留在页面上。';
+            });
+          }
+        }
+      ]
+    },
+    {
+      id: 'so',
+      no: 'SECTION 03',
+      name: '源码追踪',
+      panel: 'Sources · 源代码面板',
+      blurb: '顺着文件树、断点和调用栈，把藏在代码深处的逻辑一步步还原出来。',
+      subs: [
+        {
+          id: 'so1',
+          code: 'so-3-1.js',
+          title: '忘删的调试备忘',
+          task: '本关的业务脚本已加载到虚拟文件 lab/so-3-1.js 中，页面本身不展示源码。去 Sources 面板找到它，翻出上线前忘删的调试注释并解码。',
+          placeholder: 'SO-NOTE-...',
+          hashes: ['8a889b8fcfeddf56'],
+          hints: [
+            '打开 Sources 面板，按 Ctrl+P 输入 so-3-1.js，或按 Ctrl+Shift+F 全局搜索“发版前”。',
+            '注释里有一段以 U08t 开头的 Base64 字符串。',
+            '把这串字符拿到 Console 里用 atob("...") 解开即可。'
+          ],
+          debrief: '前端脚本会完整下载到用户浏览器。开发阶段留在注释里的测试账号、内网地址或密钥，一旦随构建产物上线就会完全暴露。',
+          build(stage) {
+            const src = [
+              '/* 实验室验证模块 lab/so-3-1.js */',
+              'window.__so1Ready = function () {',
+              '  // 调试备忘：发版前记得删除测试口令（Base64）：U08tTk9URS0xMTg=',
+              '  return "lab/so-3-1.js 已装载，源码请移步 Sources 面板查看。";',
+              '};'
+            ].join('\n');
+            injectVirtualScript(src, 'lab/so-3-1.js');
+            stage.innerHTML = `
+              <button class="stage-btn" id="so1-check">检查脚本装载状态</button>
+              <div class="stage-out" id="so1-out">提示：代码不在页面正文里，请打开 Sources 面板。</div>
+            `;
+            stage.querySelector('#so1-check').addEventListener('click', () => {
+              const out = stage.querySelector('#so1-out');
+              out.textContent = typeof window.__so1Ready === 'function'
+                ? window.__so1Ready()
+                : '脚本加载中，请稍候再试。';
+            });
+          }
+        },
+        {
+          id: 'so2',
+          code: 'so-3-2.js',
+          title: '压成一行的加密函',
+          task: 'lab/so-3-2.js 被压缩成了一整行，还把口令做了拆分、反转与 Base64 编码。在 Sources 里打开它，用格式化按钮还原排版后逆向解出明文。',
+          placeholder: 'SO-PRTY-...',
+          hashes: ['1c70184f3a803d64'],
+          hints: [
+            '在 Sources 打开 lab/so-3-2.js，点击代码区左下角的 {}（Pretty Print）把它展开成多行。',
+            '读懂 unpack 逻辑：把数组 _seg 拼成字符串，先反转，再用 atob() 解码。',
+            '也可以在看清函数名后，直接在 Console 反转拼接结果再 atob()，或用 __so2Check() 验算。'
+          ],
+          debrief: '压缩与简单混淆只增加肉眼阅读成本，按一下 Pretty Print 就能恢复缩进结构，顺着数据流一步步倒推就能还原逻辑。',
+          build(stage) {
+            const minified = 'window.__so2Check=function(input){var _seg=["=ATO","z0SW","UJFU","t80U"];var _rev=_seg.join("").split("").reverse().join("");var _plain=atob(_rev);return input===_plain?"匹配成功":"口令不符，请仔细阅读 unpack 逻辑";};';
+            injectVirtualScript(minified, 'lab/so-3-2.js');
+            stage.innerHTML = `
+              <div style="font-size:13.5px;line-height:1.7">目标文件：<code style="color:#5ce1e6">lab/so-3-2.js</code>（已单行压缩）</div>
+              <div class="stage-out">打开 Sources 面板找到该文件，点击左下角 <code>{}</code> 格式化后阅读。</div>
+            `;
+          }
+        },
+        {
+          id: 'so3',
+          code: 'so-3-3.js',
+          title: '活不过一毫秒的变量',
+          task: '点击“生成瞬时令牌”后，函数内部会在局部变量 transientSecret 里算出明文，随后立即覆写销毁，不挂全局也不打印日志。在 lab/so-3-3.js 下断点，在它消失前截住它。',
+          placeholder: 'SO-SCOP-...',
+          hashes: ['88fd741d2c8b70f9'],
+          hints: [
+            '在 Sources 打开 lab/so-3-3.js，找到给 transientSecret 赋值的那一行。',
+            '点击它下一行的行号打上蓝色行断点，再回来点击“生成瞬时令牌”。',
+            '程序暂停后，看右侧 Scope（作用域）里的 Local 栏，就能直接读出 transientSecret。'
+          ],
+          debrief: '断点能让代码执行在任意一行原地冻结。哪怕变量从不暴露到全局作用域、只存活几微秒，只要在赋值后暂停，就能在 Scope 面板里看得清清楚楚。',
+          build(stage) {
+            const src = [
+              '/* 瞬时令牌模块 lab/so-3-3.js */',
+              'window.__so3Trigger = function () {',
+              '  const codes = [83, 79, 45, 83, 67, 79, 80, 45, 53, 52, 49];',
+              '  let transientSecret = String.fromCharCode.apply(null, codes);',
+              '  // 建议在下面这一行打断点，查看右侧 Scope -> Local',
+              '  const digestPreview = transientSecret.slice(0, 3) + "***";',
+              '  transientSecret = "EXPIRED";',
+              '  return "令牌已生成并覆写（摘要：" + digestPreview + "）";',
+              '};'
+            ].join('\n');
+            injectVirtualScript(src, 'lab/so-3-3.js');
+            stage.innerHTML = `
+              <button class="stage-btn" id="so3-btn">生成瞬时令牌</button>
+              <div class="stage-out" id="so3-out">提示：直接点按钮只能看到覆写后的摘要。</div>
+            `;
+            stage.querySelector('#so3-btn').addEventListener('click', () => {
+              const out = stage.querySelector('#so3-out');
+              out.textContent = typeof window.__so3Trigger === 'function'
+                ? window.__so3Trigger()
+                : '脚本尚未就绪。';
+            });
+          }
+        },
+        {
+          id: 'so4',
+          code: 'so-3-4.js',
+          title: '三层调用栈的真凶',
+          task: '点击“运行 50 轮审批”会循环执行 50 次三层调用（dispatchAudit -> verifyBatch -> checkItem）。只有第 37 轮时，顶层 dispatchAudit 的局部变量里携带着真口令。用条件断点拦住第 37 轮，再沿调用栈向上回溯。',
+          placeholder: 'SO-STCK-...',
+          hashes: ['796b31ec9b6edda1'],
+          hints: [
+            '在 Sources 打开 lab/so-3-4.js，右键 checkItem 函数里的行号，选择“Add conditional breakpoint（添加条件断点）”。',
+            '条件填写 round === 37，然后点击“运行 50 轮审批”，程序会精准停在第 37 轮。',
+            '暂停后看右侧 Call Stack（调用栈），点击上层的 dispatchAudit，再看 Scope 里的 localAuditKey。'
+          ],
+          debrief: '在循环里盲目单步调试会耗掉大量时间。条件断点可以只在满足特定条件时停下，再配合 Call Stack 回看上游每一层栈帧的现场变量，复杂链路也能快速定位。',
+          build(stage) {
+            const src = [
+              '/* 三层调用栈演练 lab/so-3-4.js */',
+              'function checkItem(round) {',
+              '  // 在这一行右键设置条件断点：round === 37',
+              '  return round % 7 === 0 ? "checked" : "pass";',
+              '}',
+              'function verifyBatch(round, marker) {',
+              '  const stageTag = marker + "#" + round;',
+              '  return checkItem(round) + ":" + stageTag;',
+              '}',
+              'function dispatchAudit(round) {',
+              '  const localAuditKey = round === 37',
+              '    ? String.fromCharCode(83, 79, 45, 83, 84, 67, 75, 45, 55, 54, 51)',
+              '    : "NOISE-" + String(round).padStart(3, "0");',
+              '  return verifyBatch(round, localAuditKey.slice(0, 2));',
+              '}',
+              'window.__so4Run = function () {',
+              '  let last = "";',
+              '  for (let r = 1; r <= 50; r++) {',
+              '    last = dispatchAudit(r);',
+              '  }',
+              '  return "50 轮审批已全部跑完（末轮：" + last + "）";',
+              '};'
+            ].join('\n');
+            injectVirtualScript(src, 'lab/so-3-4.js');
+            stage.innerHTML = `
+              <button class="stage-btn" id="so4-btn">运行 50 轮审批</button>
+              <div class="stage-out" id="so4-out">目标文件：lab/so-3-4.js</div>
+            `;
+            stage.querySelector('#so4-btn').addEventListener('click', () => {
+              const out = stage.querySelector('#so4-out');
+              out.textContent = typeof window.__so4Run === 'function'
+                ? window.__so4Run()
+                : '脚本尚未就绪。';
+            });
+          }
+        }
+      ]
+    },
+    {
+      id: 'ne',
+      no: 'SECTION 04',
+      name: '网络溯源',
+      panel: 'Network · 网络面板',
+      blurb: '盯着每一次请求与回执，抓出响应头、原始报文和隐藏接口里的线索。',
+      subs: [
+        {
+          id: 'ne1',
+          code: 'PKT.01',
+          title: '拆开 JSON 回执',
+          task: '点击“拉取凭据”会发出两条请求，其中 JSON 响应体里藏着拆分好的两段口令。打开 Network 面板，筛选 Fetch/XHR 拦下它并拼出完整口令。',
+          placeholder: 'NET-PKT-...',
+          hashes: ['8b1d905b8e75e64e'],
+          hints: [
+            '先打开 Network 面板，点左上角清空按钮，勾选 Fetch/XHR 过滤杂项，再点击“拉取凭据”。',
+            '点开列表中 Type 为 fetch 的请求，切换到 Response 或 Preview 标签页。',
+            '把 partA（NET-PKT）和 meta.partB（204）用连字符拼在一起。'
+          ],
+          debrief: 'Network 面板忠实记录了页面发出的每一次异步请求。学会先清空列表、再按 Fetch/XHR 筛选，就能在一堆图片和样式资源里迅速锁定接口报文。',
+          build(stage, ui) {
+            stage.innerHTML = `
+              <button class="stage-btn" id="ne1-btn">拉取凭据</button>
+              <div class="pkt-log" id="ne1-log"></div>
+            `;
+            const log = stage.querySelector('#ne1-log');
+            stage.querySelector('#ne1-btn').addEventListener('click', async () => {
+              ui.setTelemetry('200 OK', 'GET', 'application/json', 'ok');
+              const u1 = makeBlobUrl('ping=ok&ts=' + Date.now(), 'text/plain');
+              const u2 = makeBlobUrl(JSON.stringify({
+                ok: true,
+                partA: 'NET-PKT',
+                meta: { channel: 'lab-v2', partB: '204' }
+              }), 'application/json');
+              await fetch(u1).then((r) => r.text()).catch(() => {});
+              await fetch(u2).then((r) => r.text()).catch(() => {});
+              log.innerHTML = `<div><span class="ts">[${nowStamp()}]</span><span>200 OK · 已收到 2 条响应，请到 Network 面板查看 JSON 响应体。</span></div>` + log.innerHTML;
+            });
+          }
+        },
+        {
+          id: 'ne2',
+          code: 'PKT.02',
+          title: '失真的 19 位学号',
+          task: '点击“拉取作者档案”，返回的 studentId 是一个 19 位长整数。对比 Network 中 Preview 和 Response 两个标签页，把 Response 原文里的最后四位数字交上来。',
+          placeholder: '四位数字',
+          hashes: ['ed163de3ef7ff05d', '04733c41735508f1'],
+          diagnose(raw) {
+            const n = norm(raw);
+            if (['8800', '8900', '8920', '1789345612345678800', '1789345612345678900'].includes(n)) {
+              return '你填的是 Preview 经 JavaScript 解析后的舍入值。切到旁边的 Response 标签，看服务器返回的原始文本。';
+            }
+            return null;
+          },
+          hints: [
+            '点击按钮后，在 Network 中点开那条 JSON 请求。',
+            'JavaScript 的最大安全整数是 9007199254740991（16 位），Preview 会先做 JSON.parse，导致 19 位整数末尾被舍入。',
+            '切换到 Response 标签页直接看原始字符串，studentId 的末尾四位是答案。'
+          ],
+          debrief: 'Preview 是开发者工具用 JS 解析后展示的视图，遇到雪花算法 ID、订单号等超长整数会发生精度丢失；核对原始数据时，始终以 Response 原文为准。',
+          build(stage, ui) {
+            stage.innerHTML = `
+              <button class="stage-btn" id="ne2-btn">拉取作者档案</button>
+              <div class="pkt-log" id="ne2-log"></div>
+            `;
+            const log = stage.querySelector('#ne2-log');
+            stage.querySelector('#ne2-btn').addEventListener('click', async () => {
+              ui.setTelemetry('200 OK', 'GET', 'application/json', 'ok');
+              const rawJson = '{"code":200,"author":"林同学","studentId":1789345612345678923,"note":"请对比 Preview 与 Response 中的 studentId"}';
+              const u = makeBlobUrl(rawJson, 'application/json');
+              await fetch(u).then((r) => r.text()).catch(() => {});
+              log.innerHTML = `<div><span class="ts">[${nowStamp()}]</span><span>200 OK · 档案已返回，请在 Network 对比 Preview 与 Response。</span></div>` + log.innerHTML;
+            });
+          }
+        },
+        {
+          id: 'ne3',
+          code: 'PKT.03',
+          title: '顺着链式回执找终点',
+          task: '点击“启动链式追踪”会连续发出 5 条请求，其中混杂了 2 条心跳干扰包，真正有效的是由 next 字段串起来的三跳链路。在 Network 里按顺序拆包，拼出完整口令。',
+          placeholder: 'NET-HOP-...',
+          hashes: ['3b046236a0601460'],
+          hints: [
+            '在 Network 中按时间顺序查看刚发出的 5 条 fetch 请求，忽略 type 为 heartbeat 的干扰包。',
+            '第二跳响应里给出了 head（NET-HOP），第三跳响应里给出了 tail（815）。',
+            '将 head 与 tail 用连字符拼合即可。'
+          ],
+          debrief: '真实业务里一次操作往往会触发一连串级联请求。按时间轴顺序跟踪请求链、过滤掉无关的心跳上报，才能理清数据的真实流向。',
+          build(stage, ui) {
+            stage.innerHTML = `
+              <button class="stage-btn" id="ne3-btn">启动链式追踪</button>
+              <div class="pkt-log" id="ne3-log"></div>
+            `;
+            const log = stage.querySelector('#ne3-log');
+            stage.querySelector('#ne3-btn').addEventListener('click', async () => {
+              ui.setTelemetry('200 OK (x5)', 'GET', 'chain/fetch', 'ok');
+              const hop3 = makeBlobUrl(JSON.stringify({ step: 3, done: true, tail: '815' }), 'application/json');
+              const hop2 = makeBlobUrl(JSON.stringify({ step: 2, head: 'NET-HOP', next: hop3 }), 'application/json');
+              const hop1 = makeBlobUrl(JSON.stringify({ step: 1, status: 'redirecting', next: hop2 }), 'application/json');
+              const noise1 = makeBlobUrl(JSON.stringify({ type: 'heartbeat', ok: true }), 'application/json');
+              const noise2 = makeBlobUrl(JSON.stringify({ type: 'heartbeat', ok: true }), 'application/json');
+              await fetch(noise1).then((r) => r.text()).catch(() => {});
+              await fetch(hop1).then((r) => r.text()).catch(() => {});
+              await fetch(hop2).then((r) => r.text()).catch(() => {});
+              await fetch(noise2).then((r) => r.text()).catch(() => {});
+              await fetch(hop3).then((r) => r.text()).catch(() => {});
+              log.innerHTML = `<div><span class="ts">[${nowStamp()}]</span><span>200 OK · 链式追踪完成（共发出 5 条请求，其中 2 条为心跳干扰）。</span></div>` + log.innerHTML;
+            });
+          }
+        },
+        {
+          id: 'ne4',
+          code: 'PKT.04',
+          title: '顺着 Initiator 换卡重发',
+          task: '点击“叩门核验”会以 guest 身份发包并被接口拒绝（业务码 403）。查看该请求在 Network 里的 Initiator（发起程序），定位到发包函数，改用 reviewer 角色重发请求拿到最终口令。',
+          placeholder: 'NET-INIT-...',
+          hashes: ['8427b32851f63cf3'],
+          hints: [
+            '先点“叩门核验”，在 Network 里找到刚发出的请求，看它的 Response 提示了什么角色要求。',
+            '点开该请求的 Initiator 标签（或列表中的 Initiator 列），它会直接指到 lab/ne-4-4.js 里的 requestVault 函数。',
+            '在 Console 里执行 requestVault("reviewer")，再去 Network 看新发出的那条成功响应。'
+          ],
+          debrief: 'Initiator 把 Network 和 Sources 连在了一起：抓到一条可疑接口后，顺着发起堆栈立刻就能找到发包源码，再用 Console 重放或修改参数验证接口行为。',
+          build(stage, ui) {
+            const src = [
+              '/* 权限网关发包模块 lab/ne-4-4.js */',
+              'window.requestVault = async function (role) {',
+              '  const r = role || "guest";',
+              '  const payload = r === "reviewer"',
+              '    ? { status: 200, role: r, token: ["NET","INIT","409"].join("-"), msg: "复核权限已放行" }',
+              '    : { status: 403, role: r, error: "当前角色无权访问，仅限 reviewer", hint: "查看 Initiator 找到发包函数并传参重发" };',
+              '  const u = URL.createObjectURL(new Blob([JSON.stringify(payload)], { type: "application/json" }));',
+              '  const resp = await fetch(u);',
+              '  const text = await resp.text();',
+              '  setTimeout(function () { URL.revokeObjectURL(u); }, 60000);',
+              '  if (window.__ne4OnDone) window.__ne4OnDone(payload.status, r);',
+              '  return "请求已完成（业务状态 " + payload.status + "），请到 Network 查看响应体。";',
+              '};'
+            ].join('\n');
+            injectVirtualScript(src, 'lab/ne-4-4.js');
+            stage.innerHTML = `
+              <button class="stage-btn" id="ne4-btn">叩门核验（当前：guest）</button>
+              <div class="pkt-log" id="ne4-log"></div>
+            `;
+            const log = stage.querySelector('#ne4-log');
+            window.__ne4OnDone = (status, role) => {
+              ui.setTelemetry(status === 200 ? '200 OK' : '403 DENIED', 'GET', 'role=' + role, status === 200 ? 'ok' : 'err');
+              log.innerHTML = `<div><span class="ts">[${nowStamp()}]</span><span>${status} · 角色 ${role} 发包完成，详细报文请看 Network 面板。</span></div>` + log.innerHTML;
+            };
+            cleanups.push(() => { delete window.__ne4OnDone; });
+            stage.querySelector('#ne4-btn').addEventListener('click', () => {
+              if (typeof window.requestVault === 'function') window.requestVault('guest');
+            });
+          }
+        }
+      ]
+    }
+  ];
+
+  /* ==================== 视图渲染 ==================== */
+  const app = document.getElementById('app');
+  function majorOf(id) { return MAJORS.find((m) => m.id === id); }
+
+  function renderHome() {
+    clearStageResources();
+    document.body.dataset.major = 'home';
+    const total = MAJORS.reduce((a, m) => a + m.subs.length, 0);
+    const done = MAJORS.reduce((a, m) => a + prog[m.id], 0);
+    const pct = Math.round((done / total) * 100);
+    const circum = 2 * Math.PI * 19;
+    const offset = circum * (1 - done / total);
+
+    app.innerHTML = `
+      <div class="mobile-note">本实训需要打开浏览器开发者工具（F12），建议在电脑端 Chrome 或 Edge 访问。</div>
+      <header class="home-hero">
+        <div>
+          <div class="home-eyebrow"><i></i><span>DEVTOOLS PUZZLE LAB · 16 CHALLENGES</span></div>
+          <h1>F12 实训解密</h1>
+          <p class="home-lead">
+            四组风格各异的网页谜题，对应开发者工具的四个核心面板。仅靠肉眼看页面，拿不到任何一关的口令。任选一组开始，每解开一题才会放行下一题。
+          </p>
+        </div>
+        <div class="home-meter">
+          <div class="meter-ring">
+            <svg viewBox="0 0 46 46">
+              <circle class="track" cx="23" cy="23" r="19"/>
+              <circle class="fill" cx="23" cy="23" r="19" stroke-dasharray="${circum.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}"/>
+            </svg>
+            <span>${pct}%</span>
+          </div>
+          <div class="meter-info">
+            <strong>已完成 ${done} / ${total} 关</strong>
+            <span>本地自动存档</span>
+          </div>
+          <button class="ghost-btn" id="ask-reset">重置进度</button>
+        </div>
+      </header>
+      <div class="reset-bar" id="reset-bar">
+        <span>确认清空全部 16 关的通关记录吗？</span>
+        <button class="danger" id="confirm-reset">确认清空</button>
+        <button id="cancel-reset">取消</button>
+      </div>
+      <section class="portal-grid">
+        ${MAJORS.map((m) => {
+          const p = prog[m.id];
+          const pips = m.subs.map((_, i) => `<i class="${i < p ? 'done' : ''}"></i>`).join('');
+          const titleExtra = m.id === 'cn' ? '<span class="cursor"></span>' : '';
+          return `
+            <button type="button" class="portal" data-th="${m.id}" data-go="${m.id}">
+              ${PORTAL_ART[m.id]}
+              <div class="portal-head">
+                <span class="tag">${m.no}</span>
+                <span class="enter-hint">ENTER -&gt;</span>
+              </div>
+              <div class="portal-body">
+                <h2>${m.name}${titleExtra}</h2>
+                <div class="panel-name">${m.panel}</div>
+                <p class="desc">${m.blurb}</p>
+              </div>
+              <div class="foot">
+                <div class="pips">${pips}</div>
+                <div class="stat">${p} / ${m.subs.length}</div>
+              </div>
+            </button>
+          `;
+        }).join('')}
+      </section>
+      <footer class="home-foot">
+        <span>进度保存在当前浏览器本地存储，刷新不会丢失。</span>
+        <span class="mono">Elements · Console · Sources · Network</span>
+      </footer>
+    `;
+
+    app.querySelectorAll('[data-go]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.go;
+        const m = majorOf(id);
+        const target = Math.min(prog[id], m.subs.length - 1);
+        location.hash = `#${id}/${target}`;
+      });
+    });
+
+    const bar = document.getElementById('reset-bar');
+    document.getElementById('ask-reset').addEventListener('click', () => bar.classList.toggle('show'));
+    document.getElementById('cancel-reset').addEventListener('click', () => bar.classList.remove('show'));
+    document.getElementById('confirm-reset').addEventListener('click', () => {
+      prog = Object.assign({}, DEFAULT_PROG);
+      saveProg();
+      renderHome();
+    });
+  }
+
+  function buildStepNav(m, idx) {
+    return `<nav class="step-nav" aria-label="小关导航">${m.subs.map((sub, i) => {
+      const unlocked = i <= prog[m.id];
+      const cls = ['step-pill', i === idx ? 'active' : '', unlocked ? '' : 'locked'].join(' ').trim();
+      const mark = i < prog[m.id] ? ' [已通]' : (unlocked ? '' : ' [锁]');
+      return `<button type="button" class="${cls}" data-step="${i}" ${unlocked ? '' : 'disabled'}>${sub.code}${mark}</button>`;
+    }).join('')}</nav>`;
+  }
+
+  function renderLevel(id, idx) {
+    const m = majorOf(id);
+    if (!m) return renderHome();
+    if (idx > prog[id]) idx = prog[id];
+    if (idx >= m.subs.length) idx = m.subs.length - 1;
+    const s = m.subs[idx];
+
+    clearStageResources();
+    document.body.dataset.major = id;
+
+    const commonControls = `
+      <div class="hint-list" id="hint-list"></div>
+      <div style="margin-top:14px">
+        <button type="button" class="ghost-btn" id="btn-hint">查看提示（共 ${s.hints.length} 级）</button>
+      </div>
+      <form class="submit-row" id="ans-form">
+        <input class="ans-input" id="ans-input" type="text" placeholder="${s.placeholder}" autocomplete="off" spellcheck="false">
+        <button class="primary-btn" type="submit" id="ans-submit">验证口令</button>
+      </form>
+      <div class="feedback" id="feedback"></div>
+      <div class="debrief" id="debrief">
+        <div class="debrief-title">原理解密</div>
+        <p>${s.debrief}</p>
+        <button type="button" class="primary-btn" id="btn-next"></button>
+      </div>
+    `;
+
+    if (id === 'el') {
+      app.innerHTML = `
+        <div class="bp-ruler">
+          <span>0px</span><span>200px</span><span>400px</span><span>600px</span><span>800px</span><span>DOM · VIEWPORT</span>
+        </div>
+        <div class="bp-sheet">
+          <i class="bp-corner tl"></i><i class="bp-corner tr"></i><i class="bp-corner bl"></i><i class="bp-corner br"></i>
+          <div class="bp-header">
+            <div>
+              <div class="bp-fig">${m.no} / ${s.code}</div>
+              <h1>${m.name} · ${m.panel}</h1>
+            </div>
+            <div class="bp-stamp">
+              <span class="bp-scale">SCALE 1:1 · REV 2.0</span>
+              <button type="button" class="ghost-btn" id="btn-home">返回大厅</button>
+            </div>
+          </div>
+          ${buildStepNav(m, idx)}
+          <h2 class="ltitle">${s.title}</h2>
+          <div class="bp-task">${s.task}</div>
+          <div class="bp-stage" id="stage"></div>
+          ${commonControls}
+        </div>
+      `;
+    } else if (id === 'cn') {
+      app.innerHTML = `
+        <div class="tty-win">
+          <div class="tty-bar">
+            <div class="tty-dots"><i class="on"></i><i></i><i></i><strong style="margin-left:6px">tty0 · ${m.panel} · SESSION ACTIVE</strong></div>
+            <button type="button" class="ghost-btn" id="btn-home">cd ~/home</button>
+          </div>
+          <div class="tty-body">
+            ${buildStepNav(m, idx)}
+            <div class="lsub">${m.no} / ${s.code}</div>
+            <h2 class="ltitle">${s.title}</h2>
+            <div class="tty-task">${s.task}</div>
+            <div class="tty-stage" id="stage"></div>
+            ${commonControls}
+            <div class="tty-tip">提示：本大关也支持直接在浏览器 Console 里调用 submit("口令") 交卷。</div>
+          </div>
+        </div>
+      `;
+    } else if (id === 'so') {
+      const tabs = m.subs.map((sub, i) => {
+        const unlocked = i <= prog[m.id];
+        const cls = ['ide-tab', i === idx ? 'active' : '', unlocked ? '' : 'locked'].join(' ').trim();
+        const tag = i < prog[m.id] ? ' ✓' : (unlocked ? '' : ' [锁]');
+        return `<button type="button" class="${cls}" data-step="${i}" ${unlocked ? '' : 'disabled'}><i class="js-dot"></i>${sub.code}${tag}</button>`;
+      }).join('');
+      const files = m.subs.map((sub, i) => {
+        const cur = i === idx ? ' cur' : '';
+        const locked = i > prog[m.id] ? ' (未解锁)' : '';
+        return `<div class="ide-file${cur}">${sub.code}${locked}</div>`;
+      }).join('');
+      app.innerHTML = `
+        <div class="ide-shell">
+          <div class="ide-topbar">
+            <div class="ide-brand">
+              <div class="ide-lights"><span></span><span></span><span></span></div>
+              <h1>f12-lab — ${m.name} (${m.panel})</h1>
+            </div>
+            <button type="button" class="ghost-btn" id="btn-home">返回大厅</button>
+          </div>
+          <div class="ide-tabs">${tabs}</div>
+          <div class="ide-body">
+            <aside class="ide-side">
+              <div class="sec-h">EXPLORER</div>
+              <div class="ide-folder">▼ lab/</div>
+              ${files}
+              <div style="margin-top:16px;padding-top:12px;border-top:1px solid #23273a;font-size:11.5px;line-height:1.65;opacity:.78">
+                在 DevTools 的 Sources 面板按 Ctrl+P 输入文件名即可打开当前关虚拟源码。
+              </div>
+            </aside>
+            <main class="ide-main">
+              <div class="ide-crumb"><span>f12-lab</span><span>/</span><span>lab</span><span>/</span><strong>${s.code}</strong></div>
+              <h2 class="ltitle">${s.title}</h2>
+              <div class="ide-task">${s.task}</div>
+              <div class="ide-stage" id="stage"></div>
+              ${commonControls}
+            </main>
+          </div>
+          <div class="ide-status">
+            <span>DevTools Sources Ready · lab/${s.code}</span>
+            <span>UTF-8 · JavaScript</span>
+          </div>
+        </div>
+      `;
+    } else {
+      app.innerHTML = `
+        <div class="net-rack">
+          <div class="net-head">
+            <div class="net-title-wrap">
+              <i class="net-led"></i>
+              <h1>CAPTURE :: ${m.name} (${m.panel})</h1>
+            </div>
+            <button type="button" class="ghost-btn" id="btn-home">返回大厅</button>
+          </div>
+          <div class="telemetry">
+            <div><span>HTTP STATUS</span><strong id="tel-status">IDLE</strong></div>
+            <div><span>METHOD</span><strong id="tel-method">--</strong></div>
+            <div><span>TARGET / PAYLOAD</span><strong id="tel-detail">等待发包</strong></div>
+          </div>
+          <div class="net-body">
+            ${buildStepNav(m, idx)}
+            <div class="lsub">${m.no} / ${s.code}</div>
+            <h2 class="ltitle">${s.title}</h2>
+            <div class="net-task">${s.task}</div>
+            <div class="net-stage" id="stage"></div>
+            ${commonControls}
+          </div>
+        </div>
+      `;
+    }
+
+    const uiHelper = {
+      setTelemetry(st, mt, dt, state) {
+        const a = document.getElementById('tel-status');
+        const b = document.getElementById('tel-method');
+        const c = document.getElementById('tel-detail');
+        if (a) {
+          a.textContent = st;
+          a.className = state === 'ok' ? 'st-ok' : (state === 'err' ? 'st-err' : '');
+        }
+        if (b) b.textContent = mt;
+        if (c) c.textContent = dt;
+      }
+    };
+
+    s.build(document.getElementById('stage'), uiHelper);
+
+    document.getElementById('btn-home').addEventListener('click', () => {
+      location.hash = '#home';
+    });
+    app.querySelectorAll('[data-step]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = Number(btn.dataset.step);
+        if (target <= prog[id]) location.hash = `#${id}/${target}`;
+      });
+    });
+
+    let hintIdx = 0;
+    const hintList = document.getElementById('hint-list');
+    const hintBtn = document.getElementById('btn-hint');
+    hintBtn.addEventListener('click', () => {
+      if (hintIdx >= s.hints.length) return;
+      const item = document.createElement('div');
+      item.className = 'hint-item';
+      item.textContent = `提示 ${hintIdx + 1}：${s.hints[hintIdx]}`;
+      hintList.appendChild(item);
+      hintIdx += 1;
+      if (hintIdx >= s.hints.length) {
+        hintBtn.textContent = '提示已全部展开';
+        hintBtn.disabled = true;
+      } else {
+        hintBtn.textContent = `再看一条提示（剩 ${s.hints.length - hintIdx} 级）`;
+      }
+    });
+
+    const form = document.getElementById('ans-form');
+    const input = document.getElementById('ans-input');
+    const submitBtn = document.getElementById('ans-submit');
+    const fb = document.getElementById('feedback');
+    const debrief = document.getElementById('debrief');
+    const nextBtn = document.getElementById('btn-next');
+
+    function verify(rawVal) {
+      const val = String(rawVal || '');
+      if (!val.trim()) return false;
+      const h = digest(val);
+      if (s.hashes.includes(h)) {
+        fb.className = 'feedback ok';
+        fb.textContent = '验证通过。';
+        if (prog[id] < idx + 1) {
+          prog[id] = idx + 1;
+          saveProg();
+        }
+        input.disabled = true;
+        submitBtn.disabled = true;
+        const isLast = idx + 1 >= m.subs.length;
+        nextBtn.textContent = isLast ? '完成本大关，返回大厅' : `进入下一关（${idx + 2} / ${m.subs.length}）`;
+        nextBtn.onclick = () => {
+          location.hash = isLast ? '#home' : `#${id}/${idx + 1}`;
+        };
+        debrief.classList.add('show');
+        return true;
+      }
+
+      fb.className = 'feedback err';
+      if (/^["'].*["']$/.test(val.trim())) {
+        fb.textContent = '口令外层多带了引号，去掉引号再提交试试。';
+      } else if (typeof s.diagnose === 'function' && s.diagnose(val)) {
+        fb.textContent = s.diagnose(val);
+      } else {
+        fb.textContent = '口令不匹配。确认没有多复制空格，或打开提示核对一下排查方向。';
+      }
+      return false;
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      verify(input.value);
+    });
+
+    if (id === 'cn') {
+      window.submit = function (ans) {
+        input.value = String(ans || '');
+        const ok = verify(ans);
+        return ok ? '验证通过，请查看页面上的原理解密并进入下一关。' : '口令不匹配，请重试。';
+      };
+    }
+
+    if (idx < prog[id]) {
+      fb.className = 'feedback ok';
+      fb.textContent = '本关已通关，你可以重新演练，或通过上方导航切换其他关卡。';
+    }
+  }
+
+  function route() {
+    const h = (location.hash || '').replace(/^#/, '');
+    const m = /^(el|cn|so|ne)(?:\/(\d+))?$/.exec(h);
+    if (m) {
+      const id = m[1];
+      const idx = m[2] !== undefined ? Number(m[2]) : Math.min(prog[id], 3);
+      renderLevel(id, idx);
+    } else {
+      renderHome();
+    }
+  }
+
+  loadProg();
+  window.addEventListener('hashchange', route);
+  window.addEventListener('load', route);
+})();
+</script>
+</body>
+</html>
