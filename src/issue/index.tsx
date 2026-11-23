@@ -16,6 +16,8 @@ const FIGS: string[] = [
  * 科协之窗 2026-2027 学年第 1 期《F12洞开网络之门》。
  * 版面取「报纸」的语法：报头双线、大字标题、首字下沉、代码「例」签、卷末「终」。
  */
+let labVisited = false;
+
 export default function Issue() {
   const pageRef = useRef<HTMLElement | null>(null);
   const layerRef = useRef<HTMLDivElement | null>(null);
@@ -24,7 +26,13 @@ export default function Issue() {
   );
 
   useEffect(() => {
-    if (labOpen) return undefined;
+    if (labOpen) {
+      // 进过实训就记一笔：之后回到正文不再触发彩蛋，
+      // 否则读者带着开着的 devtools 返回，文章会被直接吃掉。
+      labVisited = true;
+      return undefined;
+    }
+    if (labVisited) return undefined;
     const page = pageRef.current;
     const layer = layerRef.current;
     if (!page || !layer) return undefined;
