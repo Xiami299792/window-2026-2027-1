@@ -24,7 +24,10 @@ src/issue/
 ├─ index.tsx          正文与三张插图
 ├─ Issue.module.css   版面样式（报纸式：报头、首字下沉、例签、卷末）
 ├─ decorate.ts        版面装饰：报头、把「一、」染朱、卷末「终」、插图入场
-└─ horror.ts          按 F12 时的一段小演出，可单独删掉
+├─ horror.ts          按 F12 时的一段小演出，可单独删掉
+├─ Lab.tsx / Lab.module.css   实训页外壳（返回按钮、容器）
+├─ lab-engine.js      十六关引擎（纯 JS，类型见 lab-engine.d.ts）
+└─ lab-css.js         实训页样式字符串（注入到 #f12-lab 之下）
 ```
 
 不需要 `horror.ts` 的话：删掉这个文件，并去掉 `index.tsx` 里的 `useEffect`
@@ -38,6 +41,15 @@ src/issue/
 - 单栏，版心 764px；手机上自动收窄，正文 17px
 - 三张插图是手绘字符画（内联 SVG），滚动进视口时线条自绘、节点淡入
 - 装饰全部由 `decorate.ts` 在挂载时加、卸载时撤；正文一个字都没有改
+
+## 实训
+
+文末有入口，也可以直接用 `?lab=1` 打开：十六关，四大关对应四个面板
+（Elements / Console / Sources / Network），关内逐关解锁。
+
+- 进度只存在本次会话的内存里：不写 localStorage，刷新页面重置（主站规则不允许读写存储）
+- 关卡样式以 `#f12-lab` 为作用域运行时注入，组件卸载即移除，不会漏到主站
+- 口令在源码里只有哈希，翻代码抄不到
 
 ## 本地预览
 

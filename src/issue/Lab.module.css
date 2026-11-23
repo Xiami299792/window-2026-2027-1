@@ -1,0 +1,65 @@
+.lab :global(/* ============ 基础重置与动效系统 ============ */
+  *),
+.lab :global(*::before),
+.lab :global(*::after){}.lab :global(html),
+.lab{}.lab{}.lab :global(button),
+.lab :global(input){}.lab :global(button){}.lab :global(code),
+.lab :global(kbd),
+.lab :global(.mono){}@keyframes fadeUp{.lab :global(from){}.lab :global(to){}}@keyframes blink{.lab :global(0%),
+.lab :global(49%){}.lab :global(50%),
+.lab :global(100%){}}@keyframes pulseLed{.lab :global(0%),
+.lab :global(100%){}.lab :global(60%){}}.lab :global(#app){}.lab :global(.mobile-note){}@media (max-width:767px){.lab :global(.mobile-note){}.lab :global(#app){}}.lab :global(/* 自定义滚动条 */
+  ::-webkit-scrollbar){}.lab :global(::-webkit-scrollbar-track){}.lab :global(::-webkit-scrollbar-thumb){}.lab :global(::-webkit-scrollbar-thumb:hover){}.lab :global(/* ============ 首页：策展级实训大厅 ============ */
+  body[data-major="home"]){}.lab :global(.home-hero){}.lab :global(.home-eyebrow){}.lab :global(.home-eyebrow i){}.lab :global(.home-hero h1){}.lab :global(.home-lead){}.lab :global(.home-meter){}.lab :global(.meter-ring){}.lab :global(.meter-ring svg){}.lab :global(.meter-ring .track){}.lab :global(.meter-ring .fill){}.lab :global(.meter-ring span){}.lab :global(.meter-info){}.lab :global(.meter-info strong){}.lab :global(.meter-info span){}.lab :global(.reset-bar){}.lab :global(.reset-bar.show){}.lab :global(.reset-bar button){}.lab :global(.reset-bar .danger){}.lab :global(.portal-grid){}@media (max-width:740px){.lab :global(.portal-grid){}}.lab :global(.portal){}.lab :global(.portal:hover){}.lab :global(.portal:active){}.lab :global(.portal-art){}.lab :global(.portal:hover .portal-art){}.lab :global(.portal-head){}.lab :global(.portal .tag){}.lab :global(.portal .enter-hint){}.lab :global(.portal:hover .enter-hint){}.lab :global(.portal-body){}.lab :global(.portal h2){}.lab :global(.portal .panel-name){}.lab :global(.portal .desc){}.lab :global(.portal .foot){}.lab :global(.pips){}.lab :global(.pips i){}.lab :global(.pips i.done){}.lab :global(.portal .stat){}.lab :global(/* 首页四张高质感入口卡 */
+  .portal[data-th="el"]){}.lab :global(.portal[data-th="el"]::before){}.lab :global(.portal[data-th="el"] .tag){}.lab :global(.portal[data-th="el"]:hover){}.lab :global(.portal[data-th="el"] .stat){}.lab :global(.portal[data-th="el"] .pips i.done){}.lab :global(.portal[data-th="cn"]){}.lab :global(.portal[data-th="cn"] .tag){}.lab :global(.portal[data-th="cn"]:hover){}.lab :global(.portal[data-th="cn"] .cursor){}.lab :global(.portal[data-th="cn"] .pips i.done){}.lab :global(.portal[data-th="so"]){}.lab :global(.portal[data-th="so"] .tag){}.lab :global(.portal[data-th="so"]:hover){}.lab :global(.portal[data-th="so"] .stat){}.lab :global(.portal[data-th="so"] .pips i.done){}.lab :global(.portal[data-th="ne"]){}.lab :global(.portal[data-th="ne"] .tag){}.lab :global(.portal[data-th="ne"]:hover){}.lab :global(.portal[data-th="ne"] .stat){}.lab :global(.portal[data-th="ne"] .pips i.done){}.lab :global(.home-foot){}.lab :global(/* ============ 通用按钮与交互部件 ============ */
+  .ghost-btn){}.lab :global(.ghost-btn:hover){}.lab :global(.ghost-btn:disabled){}.lab :global(.submit-row){}.lab :global(.ans-input){}.lab :global(.ans-input:focus){}.lab :global(.primary-btn){}.lab :global(.primary-btn:hover:not(:disabled)){}.lab :global(.primary-btn:active:not(:disabled)){}.lab :global(.primary-btn:disabled){}.lab :global(.hint-list){}.lab :global(.hint-item){}.lab :global(.feedback){}.lab :global(.feedback.ok){}.lab :global(.feedback.err){}.lab :global(.debrief){}.lab :global(.debrief.show){}.lab :global(.debrief-title){}.lab :global(.debrief p){}.lab :global(.step-nav){}.lab :global(.step-pill){}.lab :global(.step-pill:hover:not(:disabled)){}.lab :global(.step-pill.active){}.lab :global(.step-pill.locked){}.lab :global(.ltitle){}.lab :global(.lsub){}.lab :global(.stage-btn){}.lab :global(.stage-btn:hover:not(:disabled)){}.lab :global(.stage-btn:disabled){}.lab :global(.stage-out){}.lab :global(/* =====================================================================
+     大关一：Elements（建筑工程蓝图美学）
+     ===================================================================== */
+  body[data-major="el"]){}.lab :global(.bp-ruler){}.lab :global(.bp-sheet){}.lab :global(.bp-corner){}.lab :global(.bp-corner.tl){}.lab :global(.bp-corner.tr){}.lab :global(.bp-corner.bl){}.lab :global(.bp-corner.br){}.lab :global(.bp-header){}.lab :global(.bp-header h1){}.lab :global(.bp-fig){}.lab :global(.bp-stamp){}.lab :global(.bp-scale){}.lab[data-major="el"] .step-pill{}.lab[data-major="el"] .step-pill.active{}.lab :global(.bp-task){}.lab :global(.bp-stage){}.lab[data-major="el"] .ans-input{}.lab[data-major="el"] .ans-input:focus{}.lab[data-major="el"] .primary-btn{}.lab[data-major="el"] .hint-item{}.lab[data-major="el"] .debrief{}.lab :global(/* Elements 拟真微场景卡片 */
+  .paper-box){}.lab :global(.paper-box h3){}.lab :global(.paper-box p){}.lab :global(.vip-mask){}.lab :global(.vip-mask .vip-badge){}.lab :global(.vip-toast){}.lab :global(.legacy-form){}.lab :global(.legacy-form label){}.lab :global(.legacy-form input){}.lab :global(.legacy-form button){}.lab :global(.legacy-form button:disabled){}.lab :global(.swatch-card){}.lab :global(.price-card){}.lab :global(.price-tag){}.lab :global(/* =====================================================================
+     大关二：Console（高质感复古荧光终端）
+     ===================================================================== */
+  body[data-major="cn"]){}.lab[data-major="cn"]::after{}.lab :global(.tty-win){}.lab :global(.tty-bar){}.lab :global(.tty-dots){}.lab :global(.tty-dots i){}.lab :global(.tty-dots i.on){}.lab :global(.tty-body){}.lab[data-major="cn"] .step-pill{}.lab[data-major="cn"] .step-pill.active{}.lab :global(.tty-task){}.lab :global(.tty-task::before){}.lab :global(.tty-stage){}.lab[data-major="cn"] .ans-input{}.lab[data-major="cn"] .ans-input:focus{}.lab[data-major="cn"] .primary-btn{}.lab[data-major="cn"] .hint-item{}.lab[data-major="cn"] .debrief{}.lab :global(.tty-tip){}.lab :global(.notice-scroll){}.lab :global(.notice-row){}.lab :global(.frame-wrap){}.lab :global(.frame-wrap iframe){}.lab :global(/* =====================================================================
+     大关三：Sources（现代精良 IDE 调试台）
+     ===================================================================== */
+  body[data-major="so"]){}.lab :global(.ide-shell){}.lab :global(.ide-topbar){}.lab :global(.ide-brand){}.lab :global(.ide-lights){}.lab :global(.ide-lights span){}.lab :global(.ide-lights span:nth-child(1)){}.lab :global(.ide-lights span:nth-child(2)){}.lab :global(.ide-lights span:nth-child(3)){}.lab :global(.ide-topbar h1){}.lab :global(.ide-tabs){}.lab :global(.ide-tab){}.lab :global(.ide-tab:hover:not(:disabled)){}.lab :global(.ide-tab.active){}.lab :global(.ide-tab.locked){}.lab :global(.ide-tab .js-dot){}.lab :global(.ide-body){}@media (max-width:760px){.lab :global(.ide-body){}}.lab :global(.ide-side){}@media (max-width:760px){.lab :global(.ide-side){}}.lab :global(.ide-side .sec-h){}.lab :global(.ide-folder){}.lab :global(.ide-file){}.lab :global(.ide-file.cur){}.lab :global(.ide-main){}.lab :global(.ide-crumb){}.lab :global(.ide-crumb strong){}.lab :global(.ide-task){}.lab :global(.ide-stage){}.lab :global(.ide-status){}.lab[data-major="so"] .ans-input{}.lab[data-major="so"] .ans-input:focus{}.lab[data-major="so"] .primary-btn{}.lab[data-major="so"] .hint-item{}.lab[data-major="so"] .debrief{}.lab :global(/* =====================================================================
+     大关四：Network（工业级信号抓包监测台）
+     ===================================================================== */
+  body[data-major="ne"]){}.lab :global(.net-rack){}.lab :global(.net-head){}.lab :global(.net-title-wrap){}.lab :global(.net-led){}.lab :global(.net-head h1){}.lab :global(.telemetry){}.lab :global(.telemetry > div){}.lab :global(.telemetry span){}.lab :global(.telemetry strong){}.lab :global(.telemetry strong.st-ok){}.lab :global(.telemetry strong.st-err){}.lab :global(.net-body){}.lab[data-major="ne"] .step-pill{}.lab[data-major="ne"] .step-pill.active{}.lab :global(.net-task){}.lab :global(.net-stage){}.lab :global(.pkt-log){}.lab :global(.pkt-log div){}.lab :global(.pkt-log .ts){}.lab[data-major="ne"] .ans-input{}.lab[data-major="ne"] .ans-input:focus{}.lab[data-major="ne"] .primary-btn{}.lab[data-major="ne"] .hint-item{}.lab[data-major="ne"] .debrief{}
+/* 实训页的外壳：只有容器与返回按钮，其余样式都在 Lab.module.css 里 */
+.shell {
+  min-height: 100vh;
+  background: #0b0d10;
+}
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 1200;
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 16px;
+  background: rgba(11, 13, 16, 0.86);
+  backdrop-filter: blur(6px);
+}
+
+.back {
+  padding: 7px 14px;
+  border: 1px solid #3a4048;
+  background: transparent;
+  color: #cfc9bf;
+  font: 12px/1.2 "Cascadia Mono", Consolas, monospace;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+.back:hover {
+  color: #fff;
+  border-color: #7c8590;
+}
+
+.lab {
+  display: block;
+  /* 让开主站左上角那颗 44px 的返回按钮 */
+  padding-top: 64px;
+}

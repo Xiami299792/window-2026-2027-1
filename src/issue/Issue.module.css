@@ -203,6 +203,34 @@
   --fig-ready: 1;
 }
 
+/* 文末：实训入口 */
+.entry {
+  margin: 44px 0 0;
+  padding: 22px 0 0;
+  border-top: 2px solid var(--ink);
+  text-align: center;
+}
+
+.entryText {
+  margin: 0 0 14px;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+
+.entryBtn {
+  padding: 12px 26px;
+  border: 1px solid var(--ink);
+  background: var(--red);
+  color: #f8f2e1;
+  font: 700 14px/1 "Songti SC", "Source Han Serif SC", serif;
+  letter-spacing: 0.16em;
+  cursor: pointer;
+}
+
+.entryBtn:hover {
+  background: #8d2822;
+}
+
 @media (max-width: 860px) {
   .page {
     /* 让开主站左上角那颗 44px 的返回按钮 */

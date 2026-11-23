@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
+import Lab from './Lab';
 import { decorate } from './decorate';
 import { startHorror } from './horror';
 import styles from './Issue.module.css';
@@ -18,8 +19,12 @@ const FIGS: string[] = [
 export default function Issue() {
   const pageRef = useRef<HTMLElement | null>(null);
   const layerRef = useRef<HTMLDivElement | null>(null);
+  const [labOpen, setLabOpen] = useState(
+    () => new URLSearchParams(window.location.search).has('lab'),
+  );
 
   useEffect(() => {
+    if (labOpen) return undefined;
     const page = pageRef.current;
     const layer = layerRef.current;
     if (!page || !layer) return undefined;
@@ -29,7 +34,9 @@ export default function Issue() {
       undo();
       stop();
     };
-  }, []);
+  }, [labOpen]);
+
+  if (labOpen) return <Lab onExit={() => setLabOpen(false)} />;
 
   return (
     <>
@@ -169,6 +176,12 @@ print(response.json())`}</code></pre>
         <h2 className={styles.h2}>结语：数字世界的深层秩序</h2>
         <p className={styles.p}>从《诗经·氓》里“桑之未落，其叶沃若”的古老比兴出发，我们借着一个个具体的例子走过了浏览器开发者工具的全部疆域。现在回看，这五大模块从来都不是彼此割裂的孤岛，而是一套环环相扣、由表及里的完整探索逻辑：当我们面对任何一个陌生的网站时，先用 <strong>Elements</strong> 与 <strong>Ctrl + U</strong> 对比，辨明数据究竟写在静态源码里还是渲染在动态 <strong>DOM</strong> 树中；若为动态加载，便切入 <strong>Network</strong> 勾选保留日志与停用缓存，用 <strong>Ctrl + F</strong> 全局搜索在三秒内锁定那个传递 <strong>JSON</strong> 的异步接口；当发现接口带有加密的 <strong>Cookie</strong> 或签名参数时，先去 <strong>Application</strong> 看一眼 <strong>HttpOnly</strong> 列的对勾，一秒钟分清它是服务器响应头下发的还是前端代码计算的；若确认是前端所算，便在 <strong>Console</strong> 注入几行 Hook 拦截脚本，或在 <strong>Sources</strong> 中通过全局搜索与请求断点让时间静止，顺着调用栈向上回溯、用 <strong>Never pause here</strong> 或本地代码替换（<strong>Overrides</strong>）穿过无限 <strong>debugger</strong> 的迷雾，在闭包作用域或 <strong>Memory</strong> 的堆内存字符串池里将算法与密钥尽收眼底，最终借一纸 <strong>Copy as cURL (bash)</strong> 化为简洁优雅的自动化代码。</p>
         <p className={styles.p}>人心的曲折或许难以用公式丈量，但计算机与网络世界的每一处波澜，都有迹可循、有理可依。愿你在今后的每一次网页浏览与代码探索中，都能想起键盘上方那枚小小的 <strong>F12 键</strong>，轻轻按下它，推开那扇洞开的网络之门，去领略表象之下那片广阔、严密而又迷人的底层星空。</p>
+        </div>
+        <div className={styles.entry} data-nohorror="">
+          <p className={styles.entryText}>看完想自己动手？十六道 F12 关卡，一关一关拆下去。</p>
+          <button type="button" className={styles.entryBtn} onClick={() => setLabOpen(true)}>
+            进入实训
+          </button>
         </div>
       </article>
       <div className={styles.layer} ref={layerRef} aria-hidden="true" />
